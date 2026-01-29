@@ -220,6 +220,13 @@
     .lang-dropdown.open { transform: scale(1); opacity: 1; pointer-events: auto; }
     .dark .lang-dropdown { background: #303134; border-color: #3c4043; }
 
+    /* Timeline Specifics */
+    .timeline-line {
+        position: absolute; top: 0; bottom: 0; left: 19px; width: 2px;
+        background: #e0e0e0; z-index: 0;
+    }
+    .dark .timeline-line { background: #444746; }
+
 </style>
 </head>
 <body class="antialiased">
@@ -265,29 +272,31 @@
                 <p class="text-gray-500 dark:text-gray-400 text-sm" data-i18n="dashboard_subtitle">Your digital engineering hub.</p>
             </div>
 
-            <div class="g-card relative h-48 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 flex flex-col justify-between text-white shadow-lg animate-pop">
+            <div onclick="App.nav('status')" class="cursor-pointer g-card relative h-48 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 flex flex-col justify-between text-white shadow-lg animate-pop">
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
                 <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-400/20 rounded-full blur-xl"></div>
                 <div class="flex justify-between items-start relative z-10">
-                    <div class="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border border-white/20 uppercase" data-i18n="enterprise_sol">Pro Enterprise</div>
-                    <i data-lucide="nfc" class="w-6 h-6 opacity-80"></i>
+                    <div class="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border border-white/20 uppercase" data-i18n="enterprise_sol">Active Project</div>
+                    <i data-lucide="activity" class="w-6 h-6 opacity-80 animate-pulse"></i>
                 </div>
                 <div class="relative z-10">
-                    <div class="text-sm opacity-80 mb-1" data-i18n="project_value">Active Project Value</div>
-                    <div class="text-3xl font-bold tracking-tight">₹ 45,00,000</div>
+                    <div class="text-sm opacity-80 mb-1">Enterprise ERP v2.0</div>
+                    <div class="text-3xl font-bold tracking-tight">Phase 3</div>
                     <div class="mt-2 flex items-center gap-2 text-xs opacity-70">
-                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                        Updates Live
+                        <div class="w-24 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                            <div class="w-[75%] h-full bg-white rounded-full"></div>
+                        </div>
+                        75% Complete
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-4 gap-4 animate-slide-up" style="animation-delay: 0.1s;">
-                <div onclick="App.nav('pay')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
+                <div onclick="App.nav('status')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
                     <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue dark:text-blue-400 group-hover:scale-105 transition-transform">
-                        <i data-lucide="qr-code" class="w-6 h-6"></i>
+                        <i data-lucide="target" class="w-6 h-6"></i>
                     </div>
-                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="scan">Scan</span>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="nav_track">Status</span>
                 </div>
                 <div onclick="App.nav('services')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
                     <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue dark:text-blue-400 group-hover:scale-105 transition-transform">
@@ -295,11 +304,11 @@
                     </div>
                     <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="services">Services</span>
                 </div>
-                <div onclick="App.nav('projects')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
+                <div onclick="App.nav('resources')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
                     <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue dark:text-blue-400 group-hover:scale-105 transition-transform">
-                        <i data-lucide="briefcase" class="w-6 h-6"></i>
+                        <i data-lucide="folder-open" class="w-6 h-6"></i>
                     </div>
-                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="projects">Projects</span>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="nav_resources">Resources</span>
                 </div>
                 <div onclick="App.whatsapp()" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
                     <div class="w-14 h-14 rounded-2xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 group-hover:scale-105 transition-transform">
@@ -328,39 +337,100 @@
         </div>
     </div>
 
-    <!-- 3. PAY -->
-    <div id="view-pay" class="app-view no-scrollbar">
+    <!-- 3. STATUS (Was Pay) -->
+    <div id="view-status" class="app-view no-scrollbar">
         <div class="px-4 space-y-6">
-            <h2 class="text-2xl font-bold dark:text-white">FlowZint Pay</h2>
+            <h2 class="text-2xl font-bold dark:text-white" data-i18n="track_title">Project Status</h2>
+            
+            <!-- Overall Health Card -->
             <div class="g-card p-6 bg-white dark:bg-[#2d2e31]">
-                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wide">TOTAL BALANCE</p>
-                <h1 class="text-4xl font-bold my-2 dark:text-white">₹ 8,40,200.00</h1>
-                <div class="flex gap-3 mt-6">
-                    <button class="flex-1 py-3 bg-brand-blue text-white rounded-full font-bold text-sm shadow-md ripple hover:bg-blue-700">Add Money</button>
-                    <button class="flex-1 py-3 border border-gray-300 dark:border-gray-600 rounded-full font-bold text-sm dark:text-white ripple">Transfer</button>
-                </div>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg mb-4 dark:text-white" data-i18n="transactions">Recent Transactions</h3>
-                <div class="space-y-4">
-                    <div class="flex items-center gap-4 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl">
-                        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 font-bold">A</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold dark:text-white text-sm">AWS Infrastructure</h4>
-                            <p class="text-xs text-gray-500">Today, 10:23 AM</p>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
                         </div>
-                        <span class="font-bold text-red-600 text-sm">- ₹12,400</span>
+                        <div>
+                            <h4 class="font-bold dark:text-white text-sm">Enterprise ERP</h4>
+                            <p class="text-xs text-green-600 font-bold">● System Operational</p>
+                        </div>
+                    </div>
+                    <div class="radial-progress text-blue-600 text-xs font-bold" style="--value:75;">75%</div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <div class="text-center">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Uptime</p>
+                        <p class="text-sm font-bold dark:text-white">99.9%</p>
+                    </div>
+                    <div class="text-center border-l border-gray-100 dark:border-gray-700">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Issues</p>
+                        <p class="text-sm font-bold dark:text-white">0 Open</p>
+                    </div>
+                    <div class="text-center border-l border-gray-100 dark:border-gray-700">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Sprint</p>
+                        <p class="text-sm font-bold dark:text-white">4/6</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="relative">
+                 <h3 class="font-bold text-lg mb-4 dark:text-white" data-i18n="timeline_header">Live Timeline</h3>
+                 <div class="pl-2 relative">
+                    <div class="timeline-line"></div>
+                    
+                    <!-- Item 1: Active -->
+                    <div class="flex gap-4 mb-6 relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 border-4 border-white dark:border-[#171717] flex items-center justify-center text-white shrink-0 shadow-lg">
+                            <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                        </div>
+                        <div class="g-card p-4 flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-sm dark:text-white">Backend API Integration</h4>
+                                <span class="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold">IN PROGRESS</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-2">Connecting mobile endpoints to AWS Lambda.</p>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-blue-600 h-full w-[65%] rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2: Done -->
+                    <div class="flex gap-4 mb-6 relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-green-500 border-4 border-white dark:border-[#171717] flex items-center justify-center text-white shrink-0">
+                            <i data-lucide="check" class="w-5 h-5"></i>
+                        </div>
+                        <div class="pb-2 pt-1">
+                            <h4 class="font-bold text-sm dark:text-white opacity-80">UI/UX Design Phase</h4>
+                            <p class="text-xs text-gray-500">Approved by Client</p>
+                        </div>
+                    </div>
+
+                     <!-- Item 3: Done -->
+                     <div class="flex gap-4 mb-6 relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-green-500 border-4 border-white dark:border-[#171717] flex items-center justify-center text-white shrink-0">
+                            <i data-lucide="check" class="w-5 h-5"></i>
+                        </div>
+                        <div class="pb-2 pt-1">
+                            <h4 class="font-bold text-sm dark:text-white opacity-80">Requirement Gathering</h4>
+                            <p class="text-xs text-gray-500">Scope defined & Signed</p>
+                        </div>
+                    </div>
+                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 4. PROJECTS -->
-    <div id="view-projects" class="app-view no-scrollbar">
+    <!-- 4. RESOURCES (Was Projects) -->
+    <div id="view-resources" class="app-view no-scrollbar">
         <div class="px-4">
-            <h2 class="text-2xl font-bold mb-2 dark:text-white" data-i18n="case_studies">Case Studies</h2>
-            <div id="projects-list" class="space-y-6 pb-20"></div>
+            <h2 class="text-2xl font-bold mb-2 dark:text-white" data-i18n="resource_title">Client Hub</h2>
+            <p class="text-sm text-gray-500 mb-6" data-i18n="resource_subtitle">Documents, Assets & Technical Reports.</p>
+            
+            <div id="resources-grid" class="grid grid-cols-2 gap-3 pb-20">
+                <!-- Injected via JS -->
+            </div>
         </div>
     </div>
 
@@ -518,13 +588,15 @@
             <div class="nav-indicator"><i data-lucide="grid" class="w-6 h-6"></i></div>
             <span class="nav-label" data-i18n="nav_services">Services</span>
         </button>
-        <button onclick="App.nav('pay')" class="nav-item" id="nav-pay">
-            <div class="nav-indicator"><i data-lucide="wallet" class="w-6 h-6"></i></div>
-            <span class="nav-label" data-i18n="nav_pay">Pay</span>
+        <!-- Replaced Pay with Status -->
+        <button onclick="App.nav('status')" class="nav-item" id="nav-status">
+            <div class="nav-indicator"><i data-lucide="activity" class="w-6 h-6"></i></div>
+            <span class="nav-label" data-i18n="nav_track">Status</span>
         </button>
-        <button onclick="App.nav('projects')" class="nav-item" id="nav-projects">
-            <div class="nav-indicator"><i data-lucide="briefcase" class="w-6 h-6"></i></div>
-            <span class="nav-label" data-i18n="nav_projects">Work</span>
+        <!-- Replaced Projects with Resources -->
+        <button onclick="App.nav('resources')" class="nav-item" id="nav-resources">
+            <div class="nav-indicator"><i data-lucide="folder-open" class="w-6 h-6"></i></div>
+            <span class="nav-label" data-i18n="nav_resources">Hub</span>
         </button>
         <button onclick="Auth.handleProfileClick()" class="nav-item" id="nav-profile">
             <div class="nav-indicator"><i data-lucide="user" class="w-6 h-6"></i></div>
@@ -687,11 +759,14 @@
             { id: 6, title: "IT Consulting", desc: "Technology strategy, digital transformation consulting, and roadmap planning.", price: "Consultation", time: "Ongoing", icon: "briefcase", tech: ["Strategy", "Audit", "Roadmap"] }
         ];
 
-        const PROJECTS = [
-            { name: "NeoBank FinTech", type: "Web Application", status: "Live", tech: "React + Node", desc: "A full-stack banking dashboard processing ₹10Cr+ monthly volume.", image_color: "from-purple-500 to-indigo-600" },
-            { name: "QuickDelivery", type: "Mobile App", status: "In Progress", tech: "Flutter", desc: "Hyperlocal delivery app with real-time tracking and route optimization.", image_color: "from-orange-400 to-red-500" },
-            { name: "LegalAI Bot", type: "SaaS Platform", status: "Beta", tech: "Python + GPT-4", desc: "Automated legal document analysis tool for law firms.", image_color: "from-emerald-500 to-teal-600" },
-            { name: "Crypto Exchange", type: "Web3", status: "Concept", tech: "Solidity", desc: "Decentralized exchange interface with wallet integration.", image_color: "from-gray-700 to-black" }
+        // REPLACED: 'PROJECTS' (Work) with 'RESOURCES' (Client Hub)
+        const RESOURCES = [
+            { title: "API Documentation", type: "PDF", size: "2.4 MB", icon: "file-code", color: "text-red-500", bg: "bg-red-50 dark:bg-red-900/20" },
+            { title: "Brand Guidelines", type: "Figma", size: "Ext Link", icon: "pen-tool", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-900/20" },
+            { title: "Security Protocols", type: "DOCX", size: "1.2 MB", icon: "shield", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+            { title: "Invoice History", type: "Folder", size: "12 Files", icon: "file-text", color: "text-green-500", bg: "bg-green-50 dark:bg-green-900/20" },
+            { title: "System Architecture", type: "VSDX", size: "4.8 MB", icon: "server", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-900/20" },
+            { title: "SLA Agreement", type: "PDF", size: "850 KB", icon: "file-check", color: "text-gray-500", bg: "bg-gray-100 dark:bg-gray-700" }
         ];
 
         const LANGUAGES = [
@@ -715,26 +790,26 @@
             { code: 'ru', name: 'Russian', native: 'Русский' }
         ];
 
-        // FULL TRANSLATION DICTIONARY FOR ALL 18 LANGUAGES
+        // FULL TRANSLATION DICTIONARY (Updated for TRACK and RESOURCES)
         const TRANSLATIONS = {
-            'en': { welcome: 'Welcome', dashboard_subtitle: 'Your digital engineering hub.', services: 'Services', projects: 'Projects', chat: 'Chat', scan: 'Scan', featured: 'Featured Services', nav_home: 'Home', nav_services: 'Services', nav_projects: 'Work', nav_profile: 'Profile', nav_pay: 'Pay', our_services: 'Our Services', services_subtitle: 'Professional solutions tailored for you.', case_studies: 'Case Studies', transactions: 'Recent Transactions', project_value: 'Active Project Value', dark_mode: 'Dark Mode', language: 'Language', support: 'Help & Support', description: 'Description', technologies: 'Technologies Stack', chat_expert: 'Chat with Expert', enterprise_sol: 'Pro Enterprise' },
-            'kn': { welcome: 'ಸ್ವಾಗತ', dashboard_subtitle: 'ನಿಮ್ಮ ಡಿಜಿಟಲ್ ಎಂಜಿನಿಯರಿಂಗ್ ಕೇಂದ್ರ.', services: 'ಸೇವೆಗಳು', projects: 'ಯೋಜನೆಗಳು', chat: 'ಚಾಟ್', scan: 'ಸ್ಕ್ಯಾನ್', featured: 'ವೈಶಿಷ್ಟ್ಯಗೊಳಿಸಿದ', nav_home: 'ಮುಖಪುಟ', nav_services: 'ಸೇವೆಗಳು', nav_projects: 'ಕೆಲಸ', nav_profile: 'ಪ್ರೊಫೈಲ್', nav_pay: 'ಪಾವತಿ', our_services: 'ನಮ್ಮ ಸೇವೆಗಳು', services_subtitle: 'ನಿಮಗಾಗಿ ವೃತ್ತಿಪರ ಪರಿಹಾರಗಳು.', case_studies: 'ಯಶಸ್ಸಿನ ಕಥೆಗಳು', transactions: 'ವಹಿವಾಟುಗಳು', project_value: 'ಯೋಜನೆಯ ಮೌಲ್ಯ', dark_mode: 'ಡಾರ್ಕ್ ಮೋಡ್', language: 'ಭಾಷೆ', support: 'ಸಹಾಯ', description: 'ವಿವರಣೆ', technologies: 'ತಂತ್ರಜ್ಞಾನಗಳು', chat_expert: 'ತಜ್ಞರೊಂದಿಗೆ ಮಾತನಾಡಿ', enterprise_sol: 'ಉದ್ಯಮ ಪರಿಹಾರಗಳು' },
-            'hi': { welcome: 'स्वागत है', dashboard_subtitle: 'आपका डिजिटल इंजीनियरिंग हब।', services: 'सेवाएं', projects: 'प्रोजेक्ट्स', chat: 'चैट', scan: 'स्कैन', featured: 'विशेष सेवाएं', nav_home: 'होम', nav_services: 'सेवाएं', nav_projects: 'काम', nav_profile: 'प्रोफ़ाइल', nav_pay: 'भुगतान', our_services: 'हमारी सेवाएं', services_subtitle: 'आपके लिए पेशेवर समाधान।', case_studies: 'केस स्टडीज', transactions: 'लेनदेन', project_value: 'प्रोजेक्ट मूल्य', dark_mode: 'डार्क मोड', language: 'भाषा', support: 'सहायता', description: 'विवरण', technologies: 'तकनीकी', chat_expert: 'विशेषज्ञ से बात करें', enterprise_sol: 'उद्यम समाधान' },
-            'ta': { welcome: 'வணக்கம்', dashboard_subtitle: 'உங்கள் டிஜிட்டல் மையம்.', services: 'சேவைகள்', projects: 'திட்டங்கள்', chat: 'அரட்டை', scan: 'ஸ்கேன்', featured: 'சிறப்பு', nav_home: 'முகப்பு', nav_services: 'சேவைகள்', nav_projects: 'பணி', nav_profile: 'சுயவிவரம்', nav_pay: 'பணம்', our_services: 'எங்கள் சேவைகள்', services_subtitle: 'தொழில்முறை தீர்வுகள்.', case_studies: 'வழக்கு ஆய்வுகள்', transactions: 'பரிவர்த்தனைகள்', project_value: 'திட்ட மதிப்பு', dark_mode: 'இருண்ட முறை', language: 'மொழி', support: 'உதவி', description: 'விளக்கம்', technologies: 'தொழில்நுட்பங்கள்', chat_expert: 'நிபுணருடன் பேசுங்கள்', enterprise_sol: 'நிறுவன தீர்வுகள்' },
-            'te': { welcome: 'స్వాగతం', dashboard_subtitle: 'మీ డిజిటల్ హబ్.', services: 'సేవలు', projects: 'ప్రాజెక్టులు', chat: 'చాట్', scan: 'కాన్', featured: 'ఫీచర్ చేయబడింది', nav_home: 'హోమ్', nav_services: 'సేవలు', nav_projects: 'పని', nav_profile: 'ప్రొఫైల్', nav_pay: 'చెల్లింపు', our_services: 'మా సేవలు', services_subtitle: 'వృత్తిపరమైన పరిష్కారాలు.', case_studies: 'కేస్ స్టడీస్', transactions: 'లావాదేవీలు', project_value: 'ప్రాజెక్ట్ విలువ', dark_mode: 'డార్క్ మోడ్', language: 'భాష', support: 'సహాయం', description: 'వివరణ', technologies: 'టెక్నాలజీస్', chat_expert: 'నిపుణుడితో మాట్లాడండి', enterprise_sol: 'ఎంటర్ప్రైజ్ సొల్యూషన్స్' },
-            'ml': { welcome: 'സ്വാഗതം', dashboard_subtitle: 'നിങ്ങളുടെ ഡിജിറ്റൽ ഹബ്.', services: 'സേവനങ്ങൾ', projects: 'പദ്ധതികൾ', chat: 'ചാറ്റ്', scan: 'സ്കാൻ', featured: 'ഫീച്ചർ ചെയ്തത്', nav_home: 'ഹോം', nav_services: 'സേവനങ്ങൾ', nav_projects: 'ജോലി', nav_profile: 'പ്രൊഫൈൽ', nav_pay: 'പേ', our_services: 'ഞങ്ങളുടെ സേവനങ്ങൾ', services_subtitle: 'പ്രൊഫഷണൽ പരിഹാരങ്ങൾ.', case_studies: 'കേസ് സ്റ്റഡീസ്', transactions: 'ഇടപാടുകൾ', project_value: 'പദ്ധതി മൂല്യം', dark_mode: 'ഡാർക്ക് മോഡ്', language: 'ഭാഷ', support: 'സഹായം', description: 'വിവരണം', technologies: 'സാങ്കേതികവിദ്യകൾ', chat_expert: 'വിദഗ്ദ്ധനുമായി സംസാരിക്കുക', enterprise_sol: 'എന്റർപ്രൈസ് സൊല്യൂഷൻസ്' },
-            'mr': { welcome: 'स्वागत आहे', dashboard_subtitle: 'तुमचे डिजिटल हब.', services: 'सेवा', projects: 'प्रकल्प', chat: 'चॅट', scan: 'स्कॅन', featured: 'वैशिष्ट्यीकृत', nav_home: 'होम', nav_services: 'सेवा', nav_projects: 'काम', nav_profile: 'प्रोफाइल', nav_pay: 'पे', our_services: 'आमच्या सेवा', services_subtitle: 'व्यावसायिक उपाय.', case_studies: 'केस स्टडी', transactions: 'व्यवहार', project_value: 'प्रकल्प मूल्य', dark_mode: 'डार्क मोड', language: 'भाषा', support: 'मदत', description: 'वर्णन', technologies: 'तंत्रज्ञान', chat_expert: 'तज्ञांशी बोला', enterprise_sol: 'एंटरप्राइज सोल्यूशन्स' },
-            'gu': { welcome: 'સ્વાગત છે', dashboard_subtitle: 'તમારું ડિજિટલ હબ.', services: 'સેવાઓ', projects: 'પ્રોજેક્ટ્સ', chat: 'ચેટ', scan: 'સ્કેન', featured: 'વૈશિષ્ટ્યપૂર્ણ', nav_home: 'હોમ', nav_services: 'સેવાઓ', nav_projects: 'કાર્ય', nav_profile: 'પ્રોફાઇલ', nav_pay: 'ચુકવણી', our_services: 'અમારી સેવાઓ', services_subtitle: 'વ્યાવસાયિક ઉકેલો.', case_studies: 'કેસ સ્ટડીઝ', transactions: 'વ્યવહારો', project_value: 'પ્રોજેક્ટ મૂલ્ય', dark_mode: 'ડાર્ક મોડ', language: 'ભાષા', support: 'મદદ', description: 'વર્ણન', technologies: 'ટેકનોલોજી', chat_expert: 'નિષ્ણાત સાથે વાત કરો', enterprise_sol: 'એન્ટરપ્રાઇઝ સોલ્યુશન્સ' },
-            'bn': { welcome: 'স্বাগতম', dashboard_subtitle: 'আপনার ডিজিটাল হাব।', services: 'পরিষেবা', projects: 'প্রকল্প', chat: 'চ্যাট', scan: 'স্ক্যান', featured: 'বৈশিষ্ট্যযুক্ত', nav_home: 'হোম', nav_services: 'পরিষেবা', nav_projects: 'কাজ', nav_profile: 'প্রোফাইল', nav_pay: 'পে', our_services: 'আমাদের পরিষেবা', services_subtitle: 'পেশাদার সমাধান।', case_studies: 'কেস স্টাডি', transactions: 'লেনদেন', project_value: 'প্রকল্পের মূল্য', dark_mode: 'ডার্ক মোড', language: 'ভাষা', support: 'সাহায্য', description: 'বিবরণ', technologies: 'প্রযুক্তি', chat_expert: 'বিশেষজ্ঞের সাথে কথা বলুন', enterprise_sol: 'এন্টারপ্রাইজ সলিউশন' },
-            'pa': { welcome: 'ਜੀ ਆਇਆਂ ਨੂੰ', dashboard_subtitle: 'ਤੁਹਾਡਾ ਡਿਜੀਟਲ ਹੱਬ.', services: 'ਸੇਵਾਵਾਂ', projects: 'ਪ੍ਰੋਜੈਕਟ', chat: 'ਗੱਲਬਾਤ', scan: 'ਸਕੈਨ', featured: 'ਵਿਸ਼ੇਸ਼', nav_home: 'ਘਰ', nav_services: 'ਸੇਵਾਵਾਂ', nav_projects: 'ਕੰਮ', nav_profile: 'ਪ੍ਰੋਫਾਈਲ', nav_pay: 'ਭੁਗਤਾਨ', our_services: 'ਸਾਡੀਆਂ ਸੇਵਾਵਾਂ', services_subtitle: 'ਪੇਸ਼ੇਵਰ ਹੱਲ.', case_studies: 'ਕੇਸ ਸਟੱਡੀਜ਼', transactions: 'ਲੈਣ-ਦੇਣ', project_value: 'ਪ੍ਰੋਜੈਕਟ ਮੁੱਲ', dark_mode: 'ਡਾਰਕ ਮੋਡ', language: 'ਭਾਸ਼ਾ', support: 'ਮਦਦ', description: 'ਵੇਰਵਾ', technologies: 'ਤਕਨਾਲੋਜੀ', chat_expert: 'ਮਾਹਰ ਨਾਲ ਗੱਲ ਕਰੋ', enterprise_sol: 'ਇੰਟਰਪ੍ਰਾਈਜ਼ ਹੱਲ' },
-            'ur': { welcome: 'خوش آمدید', dashboard_subtitle: 'آپ کا ڈیجیٹل مرکز', services: 'خدمات', projects: 'منصوبے', chat: 'بات چیت', scan: 'اسکین', featured: 'نمایاں', nav_home: 'ہوم', nav_services: 'خدمات', nav_projects: 'کام', nav_profile: 'پروفائل', nav_pay: 'ادائیگی', our_services: 'ہماری خدمات', services_subtitle: 'پیشہ ورانہ حل', case_studies: 'کیس اسٹڈیز', transactions: 'لین دین', project_value: 'منصوبے کی قیمت', dark_mode: 'ڈارک موڈ', language: 'زبان', support: 'مدد', description: 'تفصیل', technologies: 'ٹیکنالوجیز', chat_expert: 'ماہر سے بات کریں', enterprise_sol: 'انٹرپرائز حل' },
-            'ar': { welcome: 'أهلاً بك', dashboard_subtitle: 'محورك الرقمي.', services: 'خدمات', projects: 'مشاريع', chat: 'دردشة', scan: 'مسح', featured: 'متميز', nav_home: 'الرئيسية', nav_services: 'خدمات', nav_projects: 'عمل', nav_profile: 'الملف', nav_pay: 'دفع', our_services: 'خدماتنا', services_subtitle: 'حلول احترافية.', case_studies: 'دراسات حالة', transactions: 'المعاملات', project_value: 'قيمة المشروع', dark_mode: 'الوضع الداكن', language: 'لغة', support: 'مساعدة', description: 'وصف', technologies: 'التقنيات', chat_expert: 'تحدث مع خبير', enterprise_sol: 'حلول المؤسسات' },
-            'es': { welcome: 'Bienvenido', dashboard_subtitle: 'Tu centro digital.', services: 'Servicios', projects: 'Proyectos', chat: 'Chat', scan: 'Escanear', featured: 'Destacado', nav_home: 'Inicio', nav_services: 'Servicios', nav_projects: 'Trabajo', nav_profile: 'Perfil', nav_pay: 'Pagar', our_services: 'Nuestros Servicios', services_subtitle: 'Soluciones profesionales.', case_studies: 'Estudios de Caso', transactions: 'Transacciones', project_value: 'Valor del Proyecto', dark_mode: 'Modo Oscuro', language: 'Idioma', support: 'Ayuda', description: 'Descripción', technologies: 'Tecnologías', chat_expert: 'Hablar con Experto', enterprise_sol: 'Soluciones Empresariales' },
-            'fr': { welcome: 'Bienvenue', dashboard_subtitle: 'Votre hub numérique.', services: 'Services', projects: 'Projets', chat: 'Chat', scan: 'Scanner', featured: 'En vedette', nav_home: 'Accueil', nav_services: 'Services', nav_projects: 'Travail', nav_profile: 'Profil', nav_pay: 'Payer', our_services: 'Nos Services', services_subtitle: 'Solutions professionnelles.', case_studies: 'Études de Cas', transactions: 'Transactions', project_value: 'Valeur du Projet', dark_mode: 'Mode Sombre', language: 'Langue', support: 'Aide', description: 'Description', technologies: 'Technologies', chat_expert: 'Parler à un Expert', enterprise_sol: 'Solutions d\'Entreprise' },
-            'de': { welcome: 'Willkommen', dashboard_subtitle: 'Ihr digitaler Hub.', services: 'Dienste', projects: 'Projekte', chat: 'Chat', scan: 'Scannen', featured: 'Vorgestellt', nav_home: 'Start', nav_services: 'Dienste', nav_projects: 'Arbeit', nav_profile: 'Profil', nav_pay: 'Zahlen', our_services: 'Unsere Dienste', services_subtitle: 'Professionelle Lösungen.', case_studies: 'Fallstudien', transactions: 'Transaktionen', project_value: 'Projektwert', dark_mode: 'Dunkelmodus', language: 'Sprache', support: 'Hilfe', description: 'Beschreibung', technologies: 'Technologien', chat_expert: 'Mit Experten sprechen', enterprise_sol: 'Unternehmenslösungen' },
-            'ja': { welcome: 'ようこそ', dashboard_subtitle: 'デジタルハブ。', services: 'サービス', projects: 'プロジェクト', chat: 'チャット', scan: 'スキャン', featured: '注目', nav_home: 'ホーム', nav_services: 'サービス', nav_projects: '仕事', nav_profile: 'プロフィール', nav_pay: '支払い', our_services: '当社のサービス', services_subtitle: 'プロフェッショナルなソリューション。', case_studies: 'ケーススタディ', transactions: '取引', project_value: 'プロジェクト価値', dark_mode: 'ダークモード', language: '言語', support: 'ヘルプ', description: '説明', technologies: '技術', chat_expert: '専門家と話す', enterprise_sol: 'エンタープライズソリューション' },
-            'zh': { welcome: '欢迎', dashboard_subtitle: '您的数字中心。', services: '服务', projects: '项目', chat: '聊天', scan: '扫描', featured: '精选', nav_home: '首页', nav_services: '服务', nav_projects: '工作', nav_profile: '简介', nav_pay: '支付', our_services: '我们的服务', services_subtitle: '专业解决方案。', case_studies: '案例研究', transactions: '交易', project_value: '项目价值', dark_mode: '深色模式', language: '语言', support: '帮助', description: '描述', technologies: '技术', chat_expert: '咨询专家', enterprise_sol: '企业解决方案' },
-            'ru': { welcome: 'Добро пожаловать', dashboard_subtitle: 'Ваш цифровой хаб.', services: 'Услуги', projects: 'Проекты', chat: 'Чат', scan: 'Скан', featured: 'Избранное', nav_home: 'Главная', nav_services: 'Услуги', nav_projects: 'Работа', nav_profile: 'Профиль', nav_pay: 'Оплата', our_services: 'Наши услуги', services_subtitle: 'Профессиональные решения.', case_studies: 'Кейсы', transactions: 'Транзакции', project_value: 'Стоимость проекта', dark_mode: 'Темный режим', language: 'Язык', support: 'Помощь', description: 'Описание', technologies: 'Технологии', chat_expert: 'Чат с экспертом', enterprise_sol: 'Корпоративные решения' }
+            'en': { welcome: 'Welcome', dashboard_subtitle: 'Your digital engineering hub.', services: 'Services', resources: 'Resources', chat: 'Chat', nav_track: 'Status', nav_resources: 'Hub', featured: 'Featured Services', nav_home: 'Home', nav_services: 'Services', nav_profile: 'Profile', our_services: 'Our Services', services_subtitle: 'Professional solutions tailored for you.', resource_title: 'Client Hub', resource_subtitle: 'Documents, Assets & Technical Reports.', track_title: 'Project Status', timeline_header: 'Live Timeline', dark_mode: 'Dark Mode', language: 'Language', support: 'Help & Support', description: 'Description', technologies: 'Technologies Stack', chat_expert: 'Chat with Expert', enterprise_sol: 'Active Project' },
+            'kn': { welcome: 'ಸ್ವಾಗತ', dashboard_subtitle: 'ನಿಮ್ಮ ಡಿಜಿಟಲ್ ಎಂಜಿನಿಯರಿಂಗ್ ಕೇಂದ್ರ.', services: 'ಸೇವೆಗಳು', resources: 'ಸಂಪನ್ಮೂಲಗಳು', chat: 'ಚಾಟ್', nav_track: 'ಸ್ಥಿತಿ', nav_resources: 'ಹಬ್', featured: 'ವೈಶಿಷ್ಟ್ಯಗೊಳಿಸಿದ', nav_home: 'ಮುಖಪುಟ', nav_services: 'ಸೇವೆಗಳು', nav_profile: 'ಪ್ರೊಫೈಲ್', our_services: 'ನಮ್ಮ ಸೇವೆಗಳು', services_subtitle: 'ನಿಮಗಾಗಿ ವೃತ್ತಿಪರ ಪರಿಹಾರಗಳು.', resource_title: 'ಗ್ರಾಹಕ ಹಬ್', resource_subtitle: 'ದಾಖಲೆಗಳು ಮತ್ತು ವರದಿಗಳು.', track_title: 'ಪ್ರಾಜೆಕ್ಟ್ ಸ್ಥಿತಿ', timeline_header: 'ಲೈವ್ ಟೈಮ್‌ಲೈನ್', dark_mode: 'ಡಾರ್ಕ್ ಮೋಡ್', language: 'ಭಾಷೆ', support: 'ಸಹಾಯ', description: 'ವಿವರಣೆ', technologies: 'ತಂತ್ರಜ್ಞಾನಗಳು', chat_expert: 'ತಜ್ಞರೊಂದಿಗೆ ಮಾತನಾಡಿ', enterprise_sol: 'ಸಕ್ರಿಯ ಯೋಜನೆ' },
+            'hi': { welcome: 'स्वागत है', dashboard_subtitle: 'आपका डिजिटल इंजीनियरिंग हब।', services: 'सेवाएं', resources: 'संसाधन', chat: 'चैट', nav_track: 'स्थिति', nav_resources: 'हब', featured: 'विशेष सेवाएं', nav_home: 'होम', nav_services: 'सेवाएं', nav_profile: 'प्रोफ़ाइल', our_services: 'हमारी सेवाएं', services_subtitle: 'आपके लिए पेशेवर समाधान।', resource_title: 'क्लाइंट हब', resource_subtitle: 'दस्तावेज़ और रिपोर्ट।', track_title: 'प्रोजेक्ट स्थिति', timeline_header: 'लाइव टाइमलाइन', dark_mode: 'डार्क मोड', language: 'भाषा', support: 'सहायता', description: 'विवरण', technologies: 'तकनीकी', chat_expert: 'विशेषज्ञ से बात करें', enterprise_sol: 'सक्रिय परियोजना' },
+            'ta': { welcome: 'வணக்கம்', dashboard_subtitle: 'உங்கள் டிஜிட்டல் மையம்.', services: 'சேவைகள்', resources: 'வளங்கள்', chat: 'அரட்டை', nav_track: 'நிலை', nav_resources: 'ஹப்', featured: 'சிறப்பு', nav_home: 'முகப்பு', nav_services: 'சேவைகள்', nav_profile: 'சுயவிவரம்', our_services: 'எங்கள் சேவைகள்', services_subtitle: 'தொழில்முறை தீர்வுகள்.', resource_title: 'வாடிக்கையாளர் மையம்', resource_subtitle: 'ஆவணங்கள் மற்றும் அறிக்கைகள்.', track_title: 'திட்ட நிலை', timeline_header: 'நேரவரிசை', dark_mode: 'இருண்ட முறை', language: 'மொழி', support: 'உதவி', description: 'விளக்கம்', technologies: 'தொழில்நுட்பங்கள்', chat_expert: 'நிபுணருடன் பேசுங்கள்', enterprise_sol: 'செயலில் உள்ள திட்டம்' },
+            'te': { welcome: 'స్వాగతం', dashboard_subtitle: 'మీ డిజిటల్ హబ్.', services: 'సేవలు', resources: 'వనరులు', chat: 'చాట్', nav_track: 'స్థితి', nav_resources: 'హబ్', featured: 'ఫీచర్ చేయబడింది', nav_home: 'హోమ్', nav_services: 'సేవలు', nav_profile: 'ప్రొఫైల్', our_services: 'మా సేవలు', services_subtitle: 'వృత్తిపరమైన పరిష్కారాలు.', resource_title: 'క్లయింట్ హబ్', resource_subtitle: 'పత్రాలు మరియు నివేదికలు.', track_title: 'ప్రాజెక్ట్ స్థితి', timeline_header: 'టైమ్‌లైన్', dark_mode: 'డార్క్ మోడ్', language: 'భాష', support: 'సహాయం', description: 'వివరణ', technologies: 'టెక్నాలజీస్', chat_expert: 'నిపుణుడితో మాట్లాడండి', enterprise_sol: 'యాక్టివ్ ప్రాజెక్ట్' },
+            'ml': { welcome: 'സ്വാഗതം', dashboard_subtitle: 'നിങ്ങളുടെ ഡിജിറ്റൽ ഹബ്.', services: 'സേവനങ്ങൾ', resources: 'വിഭവങ്ങൾ', chat: 'ചാറ്റ്', nav_track: 'അവസ്ഥ', nav_resources: 'ഹബ്', featured: 'ഫീച്ചർ ചെയ്തത്', nav_home: 'ഹോം', nav_services: 'സേവനങ്ങൾ', nav_profile: 'പ്രൊഫൈൽ', our_services: 'ഞങ്ങളുടെ സേവനങ്ങൾ', services_subtitle: 'പ്രൊഫഷണൽ പരിഹാരങ്ങൾ.', resource_title: 'ക്ലയന്റ് ഹബ്', resource_subtitle: 'രേഖകളും റിപ്പോർട്ടുകളും.', track_title: 'പദ്ധതി അവസ്ഥ', timeline_header: 'ടൈംലൈൻ', dark_mode: 'ഡാർക്ക് മോഡ്', language: 'ഭാഷ', support: 'സഹായം', description: 'വിവരണം', technologies: 'സാങ്കേതികവിദ്യകൾ', chat_expert: 'വിദഗ്ദ്ധനുമായി സംസാരിക്കുക', enterprise_sol: 'സജീവ പദ്ധതി' },
+            'mr': { welcome: 'स्वागत आहे', dashboard_subtitle: 'तुमचे डिजिटल हब.', services: 'सेवा', resources: 'संसाधने', chat: 'चॅट', nav_track: 'स्थिती', nav_resources: 'हब', featured: 'वैशिष्ट्यीकृत', nav_home: 'होम', nav_services: 'सेवा', nav_profile: 'प्रोफाइल', our_services: 'आमच्या सेवा', services_subtitle: 'व्यावसायिक उपाय.', resource_title: 'ग्राहक हब', resource_subtitle: 'कागदपत्रे आणि अहवाल.', track_title: 'प्रकल्प स्थिती', timeline_header: 'टाइमलाइन', dark_mode: 'डार्क मोड', language: 'भाषा', support: 'मदत', description: 'वर्णन', technologies: 'तंत्रज्ञान', chat_expert: 'तज्ञांशी बोला', enterprise_sol: 'सक्रिय प्रकल्प' },
+            'gu': { welcome: 'સ્વાગત છે', dashboard_subtitle: 'તમારું ડિજિટલ હબ.', services: 'સેવાઓ', resources: 'સંસાધનો', chat: 'ચેટ', nav_track: 'સ્થિતિ', nav_resources: 'હબ', featured: 'વૈશિષ્ટ્યપૂર્ણ', nav_home: 'હોમ', nav_services: 'સેવાઓ', nav_profile: 'પ્રોફાઇલ', our_services: 'અમારી સેવાઓ', services_subtitle: 'વ્યાવસાયિક ઉકેલો.', resource_title: 'ગ્રાહક હબ', resource_subtitle: 'દસ્તાવેજો અને અહેવાલો.', track_title: 'પ્રોજેક્ટ સ્થિતિ', timeline_header: 'સમયરેખા', dark_mode: 'ડાર્ક મોડ', language: 'ભાષા', support: 'મદદ', description: 'વર્ણન', technologies: 'ટેકનોલોજી', chat_expert: 'નિષ્ણાત સાથે વાત કરો', enterprise_sol: 'સક્રિય પ્રોજેક્ટ' },
+            'bn': { welcome: 'স্বাগতম', dashboard_subtitle: 'আপনার ডিজিটাল হাব।', services: 'পরিষেবা', resources: 'সম্পদ', chat: 'চ্যাট', nav_track: 'অবস্থা', nav_resources: 'হাব', featured: 'বৈশিষ্ট্যযুক্ত', nav_home: 'হোম', nav_services: 'পরিষেবা', nav_profile: 'প্রোফাইল', our_services: 'আমাদের পরিষেবা', services_subtitle: 'পেশাদার সমাধান।', resource_title: 'ক্লায়েন্ট হাব', resource_subtitle: 'নথি এবং রিপোর্ট।', track_title: 'প্রকল্প অবস্থা', timeline_header: 'সময়রেখা', dark_mode: 'ডার্ক মোড', language: 'ভাষা', support: 'সাহায্য', description: 'বিবরণ', technologies: 'প্রযুক্তি', chat_expert: 'বিশেষজ্ঞের সাথে কথা বলুন', enterprise_sol: 'সক্রিয় প্রকল্প' },
+            'pa': { welcome: 'ਜੀ ਆਇਆਂ ਨੂੰ', dashboard_subtitle: 'ਤੁਹਾਡਾ ਡਿਜੀਟਲ ਹੱਬ.', services: 'ਸੇਵਾਵਾਂ', resources: 'ਸਰੋਤ', chat: 'ਗੱਲਬਾਤ', nav_track: 'ਸਥਿਤੀ', nav_resources: 'ਹੱਬ', featured: 'ਵਿਸ਼ੇਸ਼', nav_home: 'ਘਰ', nav_services: 'ਸੇਵਾਵਾਂ', nav_profile: 'ਪ੍ਰੋਫਾਈਲ', our_services: 'ਸਾਡੀਆਂ ਸੇਵਾਵਾਂ', services_subtitle: 'ਪੇਸ਼ੇਵਰ ਹੱਲ.', resource_title: 'ਗਾਹਕ ਹੱਬ', resource_subtitle: 'ਦਸਤਾਵੇਜ਼ ਅਤੇ ਰਿਪੋਰਟਾਂ.', track_title: 'ਪ੍ਰੋਜੈਕਟ ਸਥਿਤੀ', timeline_header: 'ਸਮਾਂਰੇਖਾ', dark_mode: 'ਡਾਰਕ ਮੋਡ', language: 'ਭਾਸ਼ਾ', support: 'ਮਦਦ', description: 'ਵੇਰਵਾ', technologies: 'ਤਕਨਾਲੋਜੀ', chat_expert: 'ਮਾਹਰ ਨਾਲ ਗੱਲ ਕਰੋ', enterprise_sol: 'ਸਰਗਰਮ ਪ੍ਰੋਜੈਕਟ' },
+            'ur': { welcome: 'خوش آمدید', dashboard_subtitle: 'آپ کا ڈیجیٹل مرکز', services: 'خدمات', resources: 'وسائل', chat: 'بات چیت', nav_track: 'حیثیت', nav_resources: 'مرکز', featured: 'نمایاں', nav_home: 'ہوم', nav_services: 'خدمات', nav_profile: 'پروفائل', our_services: 'ہماری خدمات', services_subtitle: 'پیشہ ورانہ حل', resource_title: 'کلائنٹ ہب', resource_subtitle: 'دستاویزات اور رپورٹس', track_title: 'منصوبے کی حیثیت', timeline_header: 'ٹائم لائن', dark_mode: 'ڈارک موڈ', language: 'زبان', support: 'مدد', description: 'تفصیل', technologies: 'ٹیکنالوجیز', chat_expert: 'ماہر سے بات کریں', enterprise_sol: 'فعال پروجیکٹ' },
+            'ar': { welcome: 'أهلاً بك', dashboard_subtitle: 'محورك الرقمي.', services: 'خدمات', resources: 'موارد', chat: 'دردشة', nav_track: 'حالة', nav_resources: 'مركز', featured: 'متميز', nav_home: 'الرئيسية', nav_services: 'خدمات', nav_profile: 'الملف', our_services: 'خدماتنا', services_subtitle: 'حلول احترافية.', resource_title: 'مركز العملاء', resource_subtitle: 'وثائق وتقارير.', track_title: 'حالة المشروع', timeline_header: 'الجدول الزمني', dark_mode: 'الوضع الداكن', language: 'لغة', support: 'مساعدة', description: 'وصف', technologies: 'التقنيات', chat_expert: 'تحدث مع خبير', enterprise_sol: 'مشروع نشط' },
+            'es': { welcome: 'Bienvenido', dashboard_subtitle: 'Tu centro digital.', services: 'Servicios', resources: 'Recursos', chat: 'Chat', nav_track: 'Estado', nav_resources: 'Hub', featured: 'Destacado', nav_home: 'Inicio', nav_services: 'Servicios', nav_profile: 'Perfil', our_services: 'Nuestros Servicios', services_subtitle: 'Soluciones profesionales.', resource_title: 'Hub de Clientes', resource_subtitle: 'Documentos e informes.', track_title: 'Estado del Proyecto', timeline_header: 'Cronología', dark_mode: 'Modo Oscuro', language: 'Idioma', support: 'Ayuda', description: 'Descripción', technologies: 'Tecnologías', chat_expert: 'Hablar con Experto', enterprise_sol: 'Proyecto Activo' },
+            'fr': { welcome: 'Bienvenue', dashboard_subtitle: 'Votre hub numérique.', services: 'Services', resources: 'Ressources', chat: 'Chat', nav_track: 'Statut', nav_resources: 'Hub', featured: 'En vedette', nav_home: 'Accueil', nav_services: 'Services', nav_profile: 'Profil', our_services: 'Nos Services', services_subtitle: 'Solutions professionnelles.', resource_title: 'Espace Client', resource_subtitle: 'Documents et rapports.', track_title: 'État du projet', timeline_header: 'Chronologie', dark_mode: 'Mode Sombre', language: 'Langue', support: 'Aide', description: 'Description', technologies: 'Technologies', chat_expert: 'Parler à un Expert', enterprise_sol: 'Projet Actif' },
+            'de': { welcome: 'Willkommen', dashboard_subtitle: 'Ihr digitaler Hub.', services: 'Dienste', resources: 'Ressourcen', chat: 'Chat', nav_track: 'Status', nav_resources: 'Hub', featured: 'Vorgestellt', nav_home: 'Start', nav_services: 'Dienste', nav_profile: 'Profil', our_services: 'Unsere Dienste', services_subtitle: 'Professionelle Lösungen.', resource_title: 'Kundenportal', resource_subtitle: 'Dokumente und Berichte.', track_title: 'Projektstatus', timeline_header: 'Zeitplan', dark_mode: 'Dunkelmodus', language: 'Sprache', support: 'Hilfe', description: 'Beschreibung', technologies: 'Technologien', chat_expert: 'Mit Experten sprechen', enterprise_sol: 'Aktives Projekt' },
+            'ja': { welcome: 'ようこそ', dashboard_subtitle: 'デジタルハブ。', services: 'サービス', resources: 'リソース', chat: 'チャット', nav_track: '状態', nav_resources: 'ハブ', featured: '注目', nav_home: 'ホーム', nav_services: 'サービス', nav_profile: 'プロフィール', our_services: '当社のサービス', services_subtitle: 'プロフェッショナルなソリューション。', resource_title: 'クライアントハブ', resource_subtitle: 'ドキュメントとレポート。', track_title: 'プロジェクトの状態', timeline_header: 'タイムライン', dark_mode: 'ダークモード', language: '言語', support: 'ヘルプ', description: '説明', technologies: '技術', chat_expert: '専門家と話す', enterprise_sol: 'アクティブなプロジェクト' },
+            'zh': { welcome: '欢迎', dashboard_subtitle: '您的数字中心。', services: '服务', resources: '资源', chat: '聊天', nav_track: '状态', nav_resources: '中心', featured: '精选', nav_home: '首页', nav_services: '服务', nav_profile: '简介', our_services: '我们的服务', services_subtitle: '专业解决方案。', resource_title: '客户中心', resource_subtitle: '文档和报告。', track_title: '项目状态', timeline_header: '时间线', dark_mode: '深色模式', language: '语言', support: '帮助', description: '描述', technologies: '技术', chat_expert: '咨询专家', enterprise_sol: '活跃项目' },
+            'ru': { welcome: 'Добро пожаловать', dashboard_subtitle: 'Ваш цифровой хаб.', services: 'Услуги', resources: 'Ресурсы', chat: 'Чат', nav_track: 'Статус', nav_resources: 'Хаб', featured: 'Избранное', nav_home: 'Главная', nav_services: 'Услуги', nav_profile: 'Профиль', our_services: 'Наши услуги', services_subtitle: 'Профессиональные решения.', resource_title: 'Клиентский хаб', resource_subtitle: 'Документы и отчеты.', track_title: 'Статус проекта', timeline_header: 'Таймлайн', dark_mode: 'Темный режим', language: 'Язык', support: 'Помощь', description: 'Описание', technologies: 'Технологии', chat_expert: 'Чат с экспертом', enterprise_sol: 'Активный проект' }
         };
 
         let state = { currentLang: 'en', theme: 'light', backPressCounter: 0 };
@@ -743,7 +818,7 @@
             Auth.init();
             renderLanguageList();
             renderServices();
-            renderProjects();
+            renderResources(); // New Render Function
             lucide.createIcons();
             
             // Back Press Handling
@@ -825,17 +900,22 @@
             `).join('');
         };
 
-        const renderProjects = () => {
-            document.getElementById('projects-list').innerHTML = PROJECTS.map(p => `
-                <div class="g-card overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300">
-                    <div class="h-32 bg-gradient-to-r ${p.image_color} relative p-4 flex flex-col justify-end text-white">
-                        <div class="absolute top-4 right-4 bg-white/20 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide border border-white/20">${p.status}</div>
-                        <h3 class="text-xl font-bold relative z-10">${p.name}</h3>
-                        <p class="text-xs opacity-0 group-hover:opacity-80 transition-opacity duration-300">${p.type}</p>
+        // NEW RENDER FUNCTION FOR RESOURCES
+        const renderResources = () => {
+            document.getElementById('resources-grid').innerHTML = RESOURCES.map(r => `
+                 <div class="g-card p-4 flex flex-col justify-between h-32 hover:shadow-lg transition-shadow cursor-pointer group dark:bg-[#2d2e31]">
+                    <div class="flex justify-between items-start">
+                        <div class="w-10 h-10 rounded-xl ${r.bg} flex items-center justify-center ${r.color}">
+                            <i data-lucide="${r.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <i data-lucide="download" class="w-4 h-4 text-gray-300 group-hover:text-brand-blue transition-colors"></i>
                     </div>
-                    <div class="p-4 bg-white dark:bg-[#2d2e31]">
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">${p.desc}</p>
-                        <span class="text-xs font-mono text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">${p.tech}</span>
+                    <div>
+                        <h4 class="text-xs font-bold dark:text-white line-clamp-1 mb-0.5">${r.title}</h4>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">${r.type}</span>
+                            <span class="text-[10px] text-gray-400">${r.size}</span>
+                        </div>
                     </div>
                 </div>
             `).join('');
