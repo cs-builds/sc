@@ -1,962 +1,793 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowZint | Enterprise Technology Solutions</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/framer-motion@10.12.16/dist/framer-motion.js"></script>
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Space Grotesk"', 'sans-serif'],
-                        heading: ['"Outfit"', 'sans-serif'],
-                    },
-                    colors: {
-                        void: '#030014',
-                        panel: '#0a0a20',
-                        accent: {
-                            cyan: '#00f0ff',
-                            purple: '#7000ff',
-                            pink: '#ff00aa',
-                            electric: '#2E5CFF'
-                        }
-                    },
-                    backgroundImage: {
-                        'hero-glow': 'conic-gradient(from 90deg at 50% 50%, #030014 0%, #1a0b2e 50%, #2e1065 100%)',
-                        'glass-gradient': 'linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%)',
-                    },
-                    animation: {
-                        'spin-slow': 'spin 20s linear infinite',
-                        'blob': 'blob 10s infinite',
-                    },
-                    keyframes: {
-                        blob: {
-                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        :root {
-            --cursor-size: 20px;
-            --cursor-hover-size: 80px;
-        }
-        body {
-            background-color: #030014;
-            color: #e2e8f0;
-            overflow-x: hidden;
-            cursor: none; 
-            margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
-        }
-        ::selection {
-            background: #7000ff;
-            color: #fff;
-        }
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #030014;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #7000ff;
-            border-radius: 4px;
-        }
-        .custom-cursor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: var(--cursor-size);
-            height: var(--cursor-size);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: width 0.3s cubic-bezier(0.19, 1, 0.22, 1), height 0.3s cubic-bezier(0.19, 1, 0.22, 1), background 0.3s;
-            mix-blend-mode: difference;
-        }
-        .custom-cursor.hovered {
-            width: var(--cursor-hover-size);
-            height: var(--cursor-hover-size);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(2px);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-        .glass-card {
-            background: rgba(13, 13, 35, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-        .glass-card:hover {
-            border-color: rgba(112, 0, 255, 0.3);
-            background: rgba(13, 13, 35, 0.6);
-        }
-        .interactive:hover {
-            cursor: none;
-        }
-        .blur-backdrop {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        // Safe Initialization of Framer Motion
-        const MotionLib = window.Motion;
-        if (!MotionLib) {
-            console.error("Framer Motion failed to load.");
-        }
-        const { motion, AnimatePresence, useScroll, useTransform, useSpring } = MotionLib || { 
-            motion: { div: 'div', nav: 'nav', h1: 'h1', p: 'p', button: 'button', span: 'span', section: 'section' },
-            AnimatePresence: ({children}) => children,
-            useScroll: () => ({ scrollY: { get: () => 0 } }),
-            useTransform: () => 0,
-            useSpring: () => 0
-        };
-
-        const { useState, useEffect, useRef } = React;
-
-        const navItems = ["Services", "Work", "Process", "Reviews", "Contact"];
-
-        const servicesData = [
-            {
-                id: "01",
-                title: "Enterprise Software Development",
-                desc: "Scalable, custom-built software solutions ranging from basic operational tools to advanced enterprise resource planning (ERP) systems.",
-                icon: "server",
-                specs: ["Basic to Advance", "Scalable Architecture", "Custom Workflows"],
-                priceUSD: "$5k+",
-                priceINR: "₹1L+"
-            },
-            {
-                id: "02",
-                title: "Custom Mobile App Development",
-                desc: "Native and cross-platform mobile applications tailored to your specific business requirements and user needs.",
-                icon: "mobile",
-                specs: ["iOS & Android", "Flutter/React Native", "User-Centric"],
-                priceUSD: "$4k+",
-                priceINR: "₹80k+"
-            },
-            {
-                id: "03",
-                title: "Website, Hosting & Cloud Solutions",
-                desc: "High-performance websites combined with secure, reliable hosting and cloud infrastructure management.",
-                icon: "monitor",
-                specs: ["Responsive Web", "AWS/Azure", "SSL Security"],
-                priceUSD: "$2k+",
-                priceINR: "₹40k+"
-            },
-            {
-                id: "04",
-                title: "E-Commerce & Marketplace Solutions",
-                desc: "Robust online store platforms and multi-vendor marketplaces designed to maximize digital sales and conversion.",
-                icon: "cart", 
-                specs: ["Payment Gateways", "Inventory Mgmt", "Global Reach"],
-                priceUSD: "$3k+",
-                priceINR: "₹60k+"
-            },
-            {
-                id: "05",
-                title: "Brand Identity & Corporate Assets",
-                desc: "Strategic branding services including logo design, visual identity systems, and corporate marketing assets.",
-                icon: "pen", 
-                specs: ["Logo Design", "Brand Guidelines", "UI/UX Kits"],
-                priceUSD: "$1k+",
-                priceINR: "₹25k+"
-            },
-            {
-                id: "06",
-                title: "IT Consulting & Technology Strategy",
-                desc: "Expert guidance on technology adoption, digital transformation strategies, and IT infrastructure planning.",
-                icon: "brain",
-                specs: ["Digital Roadmap", "Tech Stack Audit", "Optimization"],
-                priceUSD: "$2k+",
-                priceINR: "₹50k+"
-            }
-        ];
-
-        const projectsData = [
-            {
-                title: "Nebula Finance",
-                cat: "FinTech Core",
-                img: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2832&auto=format&fit=crop",
-                stat: "$4.2B Processed",
-                year: "2024"
-            },
-            {
-                title: "AeroStream Logistics",
-                cat: "AI Supply Chain",
-                img: "https://images.unsplash.com/photo-1559028012-481c04fa702d?q=80&w=2836&auto=format&fit=crop",
-                stat: "99.99% Accuracy",
-                year: "2023"
-            },
-            {
-                title: "Velvet Luxe",
-                cat: "E-Commerce",
-                img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2864&auto=format&fit=crop",
-                stat: "300% ROAS",
-                year: "2024"
-            }
-        ];
-
-        const Icon = ({ name, className }) => {
-            const paths = {
-                server: <path d="M2 12h20M2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6M2 12V6a2 2 0 0 0 2-2h16a2 2 0 0 0 2 2v6" />,
-                monitor: <><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></>,
-                mobile: <><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></>,
-                brain: <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Zm5 0A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />,
-                chain: <><rect width="7" height="7" x="14" y="3" rx="1"/><path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3"/></>,
-                cart: <><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></>,
-                pen: <path d="M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>,
-                shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>,
-                arrow: <><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></>,
-                star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
-                menu: <><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></>,
-                x: <><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
-                
-                // Social Icons
-                socialX: <path d="M17.2 3H21L12.5 12.8 22.2 24H14.5L8.5 16.9 1.6 24H-2.2L6.8 13.6-2.5 3H5.3L10.8 9.4 17.2 3ZM15.9 21.8H18L6.4 5.1H4.2L15.9 21.8Z" fill="currentColor" stroke="none"/>,
-                socialFb: <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />,
-                socialLi: <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z M2 9h4v12H2z M4 2a2 2 0 1 1-1.998 2.002A2 2 0 0 1 4 2z" />,
-                socialInsta: <><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></>,
-                socialTwitch: <path d="M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9V7m5 4V7" />,
-                socialYt: <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33zM9.75 15.02l5.75-3.27-5.75-3.27z" />,
-                socialPod: <><path d="M12 1a9 9 0 0 0-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2a7 7 0 0 1 14 0v2h-4v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 0 0-9-9z"/></>,
-                socialMail: <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>
-            };
-            
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    {paths[name] || paths.arrow}
-                </svg>
-            );
-        };
-
-        const Cursor = () => {
-            const cursor = useRef(null);
-            
-            useEffect(() => {
-                const moveCursor = (e) => {
-                    if(cursor.current) {
-                        cursor.current.style.left = `${e.clientX}px`;
-                        cursor.current.style.top = `${e.clientY}px`;
-                    }
-                }
-                const hover = () => cursor.current?.classList.add('hovered');
-                const unhover = () => cursor.current?.classList.remove('hovered');
-
-                window.addEventListener('mousemove', moveCursor);
-                document.querySelectorAll('.interactive').forEach(el => {
-                    el.addEventListener('mouseenter', hover);
-                    el.addEventListener('mouseleave', unhover);
-                });
-                
-                // Mutation observer to handle dynamically added elements
-                const observer = new MutationObserver(() => {
-                     document.querySelectorAll('.interactive').forEach(el => {
-                        el.removeEventListener('mouseenter', hover);
-                        el.removeEventListener('mouseleave', unhover);
-                        el.addEventListener('mouseenter', hover);
-                        el.addEventListener('mouseleave', unhover);
-                    });
-                });
-                observer.observe(document.body, { childList: true, subtree: true });
-
-                return () => {
-                    window.removeEventListener('mousemove', moveCursor);
-                    observer.disconnect();
-                }
-            }, []);
-
-            return <div ref={cursor} className="custom-cursor hidden md:block"></div>
-        }
-
-        const Loader = ({ onComplete }) => {
-            useEffect(() => {
-                const timer = setTimeout(() => onComplete(), 2800);
-                return () => clearTimeout(timer);
-            }, []);
-
-            return (
-                <motion.div 
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="fixed inset-0 z-50 bg-void flex items-center justify-center flex-col"
-                >
-                    <div className="relative flex flex-col items-center">
-                        <motion.div 
-                            initial={{ width: 0 }} 
-                            animate={{ width: 200 }} 
-                            transition={{ duration: 2, ease: "circOut" }}
-                            className="h-[2px] bg-white mb-8"
-                        />
-                        {/* UPDATED: Replaced Text with Logo Image */}
-                        <img src="logo.png" alt="FlowZint" className="h-16 md:h-24 w-auto rounded-xl" />
-                        
-                        <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 }}
-                            className="flex justify-between w-full mt-4 text-xs font-mono text-accent-cyan tracking-[0.2em] uppercase"
-                        >
-                            <span>System Init</span>
-                            <span>V 2.1.0</span>
-                        </motion.div>
-                    </div>
-                </motion.div>
-            )
-        }
-
-        const RegionSelector = ({ onSelect }) => {
-            return (
-                <motion.div 
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    className="fixed bottom-0 left-0 w-full z-[100] p-4 flex justify-center items-end md:items-center bg-black/60 backdrop-blur-sm h-full md:h-auto md:bg-transparent md:backdrop-blur-none"
-                >
-                    <div className="bg-[#0a0a20] border border-accent-cyan/50 p-6 rounded-2xl shadow-[0_0_50px_rgba(0,240,255,0.15)] max-w-xl w-full flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-cyan to-transparent opacity-50"></div>
-                        
-                        <div className="flex-1 text-center md:text-left">
-                            <h3 className="text-white font-bold mb-2 text-lg">Select Your Region</h3>
-                            <p className="text-slate-300 text-sm">Please select your location to view localized pricing and services.</p>
-                        </div>
-                        
-                        <div className="flex gap-4 w-full md:w-auto">
-                            <button 
-                                onClick={() => onSelect('IN')}
-                                className="group flex-1 md:flex-initial flex flex-col items-center gap-2 p-4 rounded-xl bg-orange-950/30 border border-orange-500/50 hover:bg-orange-900/40 hover:border-orange-400 transition-all interactive min-w-[110px]"
-                            >
-                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orange-500/50 shadow-lg group-hover:scale-110 transition-transform relative bg-black/50">
-                                    <img src="https://flagcdn.com/w80/in.png" alt="India Flag" className="w-full h-full object-cover relative z-10" />
-                                </div>
-                                <span className="text-xs font-bold tracking-widest text-white group-hover:text-orange-400 transition-colors">INDIA</span>
-                            </button>
-                            
-                            <button 
-                                onClick={() => onSelect('US')}
-                                className="group flex-1 md:flex-initial flex flex-col items-center gap-2 p-4 rounded-xl bg-blue-950/30 border border-blue-500/50 hover:bg-blue-900/40 hover:border-blue-400 transition-all interactive min-w-[110px]"
-                            >
-                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-blue-500/50 shadow-lg group-hover:scale-110 transition-transform relative bg-black/50">
-                                    <img src="https://flagcdn.com/w80/us.png" alt="USA Flag" className="w-full h-full object-cover relative z-10" />
-                                </div>
-                                <span className="text-xs font-bold tracking-widest text-white group-hover:text-blue-400 transition-colors">USA</span>
-                            </button>
-                        </div>
-                    </div>
-                </motion.div>
-            )
-        }
-
-        const Navbar = ({ region }) => {
-            const [scrolled, setScrolled] = useState(false);
-            const [menuOpen, setMenuOpen] = useState(false);
-
-            useEffect(() => {
-                const handleScroll = () => setScrolled(window.scrollY > 50);
-                window.addEventListener('scroll', handleScroll);
-                return () => window.removeEventListener('scroll', handleScroll);
-            }, []);
-
-            // Animation Variants for the Pro Sidebar
-            const sidebarVariants = {
-                closed: { 
-                    x: "100%", 
-                    transition: { 
-                        type: "spring", 
-                        stiffness: 400, 
-                        damping: 40 
-                    } 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" id="theme-color-meta">
+<title>Shridhar Group | FlowZint</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&family=Noto+Sans+Hindi:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Gujarati:wght@400;700&family=Noto+Sans+Gurmukhi:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['Google Sans', 'Roboto', 'sans-serif'],
                 },
-                open: { 
-                    x: 0, 
-                    transition: { 
-                        type: "spring", 
-                        stiffness: 300, 
-                        damping: 30,
-                        staggerChildren: 0.1,
-                        delayChildren: 0.2
-                    } 
+                colors: {
+                    brand: {
+                        blue: '#1a73e8', 
+                        dark: '#000000',
+                        light: '#ffffff',
+                        surface: '#f8f9fa',
+                        red: '#d93025',
+                    },
+                    dark: {
+                        bg: '#202124',
+                        surface: '#2d2e31',
+                        border: '#3c4043'
+                    }
+                },
+                boxShadow: {
+                    'gpay': '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)',
+                    'modal': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                },
+                animation: {
+                    'fade-in': 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                    'slide-up': 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                    'pop-center': 'popCenter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                },
+                keyframes: {
+                    fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+                    slideUp: { from: { transform: 'translateY(20px)', opacity: 0 }, to: { transform: 'translateY(0)', opacity: 1 } },
+                    popCenter: { from: { transform: 'scale(0.9)', opacity: 0 }, to: { transform: 'scale(1)', opacity: 1 } }
                 }
-            };
-
-            const itemVariants = {
-                closed: { x: 50, opacity: 0 },
-                open: { x: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 24 } }
-            };
-
-            return (
-                <>
-                <motion.nav 
-                    initial={{ y: -100 }}
-                    animate={{ y: 0 }}
-                    className={`fixed top-0 w-full z-40 transition-all duration-500 ${scrolled ? 'py-4 bg-void/80 backdrop-blur-xl border-b border-white/5' : 'py-8'}`}
-                >
-                    <div className="container mx-auto px-6 flex justify-between items-center">
-                        <a href="#" className="interactive relative z-50">
-                            <img src="logo.png" alt="FlowZint" className="h-10 w-auto rounded-xl" />
-                        </a>
-
-                        {/* Desktop Menu - Updated to link to HTML files */}
-                        <div className="hidden md:flex items-center gap-10">
-                            {navItems.map(item => (
-                                <a key={item} href={`${item.toLowerCase()}.html`} className="text-sm font-medium text-slate-400 hover:text-white transition-colors interactive">
-                                    {item}
-                                </a>
-                            ))}
+            }
+        }
+    }
+</script>
+<style>
+    :root {
+        --safe-top: env(safe-area-inset-top, 24px);
+        --safe-bottom: env(safe-area-inset-bottom, 20px);
+        --nav-height: 56px; 
+    }
+    * { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; outline: none; }
+    body { background-color: #ffffff; color: #202124; transition: background-color 0.3s, color 0.3s; overflow: hidden; height: 100dvh; width: 100vw; }
+    body.dark { background-color: #171717; color: #e8eaed; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .app-view { position: absolute; inset: 0; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding-top: calc(var(--nav-height) + var(--safe-top) + 20px); padding-bottom: calc(100px + var(--safe-bottom)); opacity: 0; pointer-events: none; transform: scale(0.98); transition: opacity 0.3s ease, transform 0.3s ease; }
+    .app-view.active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
+    .g-card { background: #ffffff; border-radius: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); border: 1px solid #dadce0; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .g-card:active { transform: scale(0.98); }
+    .dark .g-card { background: #2d2e31; border-color: #3c4043; box-shadow: none; }
+    .service-card { display: flex; align-items: center; padding: 16px; margin-bottom: 12px; background: white; border-radius: 20px; border: 1px solid #f1f3f4; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .dark .service-card { background: #2d2e31; border-color: #3c4043; box-shadow: none; }
+    .service-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+    .icon-box { position: relative; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: #f0f7ff; color: #1a73e8; overflow: hidden; }
+    .dark .icon-box { background: rgba(26, 115, 232, 0.15); color: #8ab4f8; }
+    .icon-box::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, rgba(26, 115, 232, 0.2) 0%, transparent 70%); opacity: 0; transition: opacity 0.3s; }
+    .service-card:hover .icon-box::after { opacity: 1; }
+    .service-card:hover .icon-animate { animation: float 2s ease-in-out infinite; }
+    .work-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .work-card { background: white; border-radius: 20px; padding: 16px; border: 1px solid #f1f3f4; display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.2s; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .dark .work-card { background: #2d2e31; border-color: #3c4043; box-shadow: none; }
+    .work-card:active { transform: scale(0.96); }
+    .work-icon-wrap { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-weight: bold; font-size: 20px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
+    .auth-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease-out; padding: 20px; }
+    .auth-overlay.open { opacity: 1; pointer-events: auto; }
+    .auth-box { width: 100%; max-width: 360px; background: white; border-radius: 24px; padding: 32px 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05); transform: scale(0.95); opacity: 0; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; position: relative; max-height: 85vh; overflow-y: auto; -ms-overflow-style: none; scrollbar-width: none; }
+    .auth-box::-webkit-scrollbar { display: none; } 
+    .dark .auth-box { background: #202124; border: 1px solid #3c4043; box-shadow: none; }
+    .auth-overlay.open .auth-box { transform: scale(1); opacity: 1; }
+    .auth-input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #f1f3f4; background: #f8f9fa; font-size: 15px; margin-bottom: 12px; transition: all 0.2s; color: #202124; font-weight: 500; outline: none; }
+    .dark .auth-input { background: #303134; border-color: #444746; color: white; }
+    .auth-input:focus { border-color: #1a73e8; background: white; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.1); }
+    .dark .auth-input:focus { background: #202124; border-color: #8ab4f8; box-shadow: none; }
+    .error-msg { background: #fce8e6; color: #d93025; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; animation: fadeIn 0.2s ease; border: 1px solid #f5c6cb; }
+    .dark .error-msg { background: #5c1e1d; color: #f2b8b5; border-color: #8a3434; }
+    .detail-page { position: fixed; inset: 0; background: white; z-index: 200; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+    .dark .detail-page { background: #202124; }
+    .detail-page.open { transform: translateX(0); }
+    .bottom-nav { position: fixed; bottom: calc(20px + var(--safe-bottom)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; height: 72px; background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); border-radius: 36px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 100; border: 1px solid rgba(255,255,255,0.2); }
+    .dark .bottom-nav { background: rgba(32, 33, 36, 0.9); border-color: rgba(255,255,255,0.05); }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #5f6368; gap: 4px; }
+    .dark .nav-item { color: #9aa0a6; }
+    .nav-item.active { color: #1a73e8; }
+    .dark .nav-item.active { color: #8ab4f8; }
+    .nav-indicator { height: 32px; width: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .nav-item.active .nav-indicator { background: #e8f0fe; }
+    .dark .nav-item.active .nav-indicator { background: #394457; }
+    .nav-label { font-size: 11px; font-weight: 600; }
+    .lang-dropdown { position: absolute; top: calc(var(--nav-height) + var(--safe-top) + 10px); right: 20px; background: white; border-radius: 16px; width: 220px; max-height: 350px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 9999; transform-origin: top right; transform: scale(0); opacity: 0; transition: all 0.2s; border: 1px solid #e5e7eb; pointer-events: none; }
+    .lang-dropdown.open { transform: scale(1); opacity: 1; pointer-events: auto; }
+    .dark .lang-dropdown { background: #303134; border-color: #3c4043; }
+    .stat-card { background: linear-gradient(145deg, #ffffff, #f0f7ff); border: 1px solid #e0e7ff; }
+    .dark .stat-card { background: linear-gradient(145deg, #2d2e31, #202124); border: 1px solid #3c4043; }
+</style>
+</head>
+<body class="antialiased">
+    <div class="fixed top-0 left-0 right-0 h-[calc(var(--nav-height)+var(--safe-top))] pt-[var(--safe-top)] px-4 flex items-center justify-between z-50 bg-white/95 dark:bg-[#171717]/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors">
+        <div class="flex items-center flex-1 min-w-0 mr-4">
+            <div class="h-9 w-auto overflow-hidden">
+                <img id="app-logo" src="logow.png" alt="Shridhar Group" class="h-full w-auto object-contain transition-opacity duration-300">
+            </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0 flex-nowrap">
+            <button onclick="App.toggleTheme()" class="w-9 h-9 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-700">
+                <i data-lucide="sun-moon" class="w-4 h-4 text-gray-600 dark:text-gray-300"></i>
+            </button>
+            <button onclick="App.toggleLangMenu()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-700">
+                <i data-lucide="globe" class="w-3.5 h-3.5 text-brand-blue"></i>
+                <span id="current-lang" class="text-[11px] font-bold text-gray-700 dark:text-gray-200">EN</span>
+                <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
+            </button>
+            <button onclick="Auth.handleProfileClick()" class="w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <img id="header-avatar" src="https://ui-avatars.com/api/?name=Guest&background=f1f3f4&color=5f6368" class="w-full h-full object-cover">
+            </button>
+        </div>
+    </div>
+    <div id="lang-menu" class="lang-dropdown no-scrollbar"></div>
+    <div id="view-home" class="app-view active no-scrollbar">
+        <div class="px-4 space-y-6">
+            <div class="mt-2 animate-slide-up">
+                <h2 class="text-2xl font-bold dark:text-white"><span data-i18n="welcome">Welcome</span>, <span id="welcome-name">User</span></h2>
+                <p class="text-gray-500 dark:text-gray-400 text-sm" data-i18n="dashboard_subtitle">Your digital engineering hub.</p>
+            </div>
+            <div class="g-card relative h-48 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 flex flex-col justify-between text-white shadow-lg animate-pop">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-400/20 rounded-full blur-xl"></div>
+                <div class="flex justify-between items-start relative z-10">
+                    <div class="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border border-white/20 uppercase" data-i18n="enterprise_sol">Pro Enterprise</div>
+                    <i data-lucide="nfc" class="w-6 h-6 opacity-80"></i>
+                </div>
+                <div class="relative z-10">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="project_value">Active Project Value</div>
+                    <div class="text-3xl font-bold tracking-tight">₹ 45,00,000</div>
+                    <div class="mt-2 flex items-center gap-2 text-xs opacity-70">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <span data-i18n="updates_live">Updates Live</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="App.openLead('General Inquiry: Build App')" class="w-full py-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-900/10 border border-orange-200 dark:border-orange-800 rounded-2xl flex items-center justify-between px-4 animate-slide-up shadow-sm group hover:shadow-md transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold shadow-lg shadow-orange-200 dark:shadow-none">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <div class="text-left">
+                        <h4 class="text-sm font-bold text-gray-800 dark:text-gray-100" data-i18n="need_app_like_this">Need an App like this?</h4>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400" data-i18n="get_quote">Get your custom quote today</p>
+                    </div>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-orange-500 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+            <div class="grid grid-cols-4 gap-4 animate-slide-up" style="animation-delay: 0.1s;">
+                <div onclick="App.nav('vault')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue dark:text-blue-400 group-hover:scale-105 transition-transform">
+                        <i data-lucide="folder-lock" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="nav_vault">Vault</span>
+                </div>
+                <div onclick="App.nav('services')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue dark:text-blue-400 group-hover:scale-105 transition-transform">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="services">Services</span>
+                </div>
+                <div onclick="App.nav('works')" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue dark:text-blue-400 group-hover:scale-105 transition-transform">
+                        <i data-lucide="briefcase" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="nav_works">Works</span>
+                </div>
+                <div onclick="App.whatsapp()" class="flex flex-col items-center gap-2 ripple cursor-pointer group">
+                    <div class="w-14 h-14 rounded-2xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 group-hover:scale-105 transition-transform">
+                        <i data-lucide="message-circle" class="w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300" data-i18n="chat">Chat</span>
+                </div>
+            </div>
+            <div class="animate-slide-up" style="animation-delay: 0.2s;">
+                <div class="flex justify-between items-end mb-4">
+                    <h3 class="font-bold text-lg dark:text-white" data-i18n="featured">Featured Services</h3>
+                    <button onclick="App.nav('services')" class="text-xs font-bold text-brand-blue uppercase tracking-wide" data-i18n="view_all">View All</button>
+                </div>
+                <div class="space-y-3" id="featured-list"></div>
+            </div>
+            <div class="h-12"></div>
+        </div>
+    </div>
+    <div id="view-services" class="app-view no-scrollbar">
+        <div class="px-4">
+            <h2 class="text-2xl font-bold mb-2 dark:text-white" data-i18n="our_services">Our Services</h2>
+            <p class="text-sm text-gray-500 mb-6" data-i18n="services_subtitle">Professional solutions tailored for you.</p>
+            <div id="services-grid" class="flex flex-col pb-20"></div>
+        </div>
+    </div>
+    <div id="view-vault" class="app-view no-scrollbar">
+        <div class="px-4 space-y-6 pb-20">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold dark:text-white" data-i18n="vault_title">Project Vault</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400" data-i18n="vault_subtitle">Secure access to your assets.</p>
+                </div>
+                <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="g-card p-5 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400" data-i18n="storage_used">Storage Used</span>
+                    <span class="text-xs font-bold">1.2 GB / 5 GB</span>
+                </div>
+                <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div class="h-full w-[24%] bg-indigo-500 rounded-full"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="g-card p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group flex flex-col justify-between h-32 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2 opacity-5"><i data-lucide="folder" class="w-24 h-24"></i></div>
+                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600"><i data-lucide="scale" class="w-5 h-5"></i></div>
+                    <div>
+                        <h4 class="font-bold text-sm dark:text-white leading-tight" data-i18n="folder_legal">Legal & Contracts</h4>
+                        <p class="text-[10px] text-gray-500 font-medium">4 Files • 12MB</p>
+                    </div>
+                </div>
+                <div class="g-card p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group flex flex-col justify-between h-32 relative overflow-hidden">
+                     <div class="absolute top-0 right-0 p-2 opacity-5"><i data-lucide="folder" class="w-24 h-24"></i></div>
+                    <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600"><i data-lucide="palette" class="w-5 h-5"></i></div>
+                     <div>
+                        <h4 class="font-bold text-sm dark:text-white leading-tight" data-i18n="folder_design">Design Assets</h4>
+                        <p class="text-[10px] text-gray-500 font-medium">12 Files • 450MB</p>
+                    </div>
+                </div>
+                <div class="g-card p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group flex flex-col justify-between h-32 relative overflow-hidden">
+                     <div class="absolute top-0 right-0 p-2 opacity-5"><i data-lucide="folder" class="w-24 h-24"></i></div>
+                    <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600"><i data-lucide="box" class="w-5 h-5"></i></div>
+                     <div>
+                        <h4 class="font-bold text-sm dark:text-white leading-tight" data-i18n="folder_builds">Builds & APKs</h4>
+                        <p class="text-[10px] text-gray-500 font-medium">v2.4.0 • Latest</p>
+                    </div>
+                </div>
+                 <div class="g-card p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group flex flex-col justify-between h-32 relative overflow-hidden">
+                     <div class="absolute top-0 right-0 p-2 opacity-5"><i data-lucide="folder" class="w-24 h-24"></i></div>
+                    <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600"><i data-lucide="receipt" class="w-5 h-5"></i></div>
+                     <div>
+                        <h4 class="font-bold text-sm dark:text-white leading-tight" data-i18n="folder_finance">Invoices</h4>
+                        <p class="text-[10px] text-gray-500 font-medium">3 Pending</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg dark:text-white" data-i18n="recent_files">Recent Files</h3>
+                    <span class="text-xs font-bold text-brand-blue cursor-pointer" data-i18n="view_all">View All</span>
+                </div>
+                <div id="vault-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+    <div id="view-works" class="app-view no-scrollbar">
+        <div class="px-4 pb-20">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold dark:text-white" data-i18n="works_title">Previous Works</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400" data-i18n="works_subtitle">Explore our successful projects.</p>
+                </div>
+                <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-brand-blue">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mb-8" id="stats-container">
+                <div class="stat-card p-3 rounded-2xl text-center">
+                    <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wide mb-1" data-i18n="stat_sat">Satisfaction</div>
+                    <div class="text-lg font-bold text-green-600 dark:text-green-400 flex justify-center items-center"><span id="stat-sat">0</span>%</div>
+                </div>
+                <div class="stat-card p-3 rounded-2xl text-center">
+                    <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wide mb-1" data-i18n="stat_trusted">Trusted</div>
+                    <div class="text-lg font-bold text-blue-600 dark:text-blue-400 flex justify-center items-center"><span id="stat-trusted">0</span>+</div>
+                </div>
+                <div class="stat-card p-3 rounded-2xl text-center">
+                    <div class="text-[10px] uppercase font-bold text-gray-400 tracking-wide mb-1" data-i18n="stat_proj">Projects</div>
+                    <div class="text-lg font-bold text-indigo-600 dark:text-indigo-400 flex justify-center items-center"><span id="stat-proj">0</span>+</div>
+                </div>
+            </div>
+            <div class="mb-6">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 ml-1" data-i18n="websites_apps">Websites & Web Apps</h3>
+                <div id="works-web-grid" class="work-grid"></div>
+            </div>
+            <div class="mb-6">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 ml-1" data-i18n="mobile_apps">Mobile Apps</h3>
+                <div id="works-app-grid" class="work-grid"></div>
+            </div>
+        </div>
+    </div>
+    <div id="view-profile" class="app-view no-scrollbar">
+        <div class="px-4 pb-20">
+            <div class="text-center py-6">
+                <div class="relative w-24 h-24 mx-auto">
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-1">
+                        <img id="profile-img-lg" src="" class="w-full h-full rounded-full object-cover border-4 border-white dark:border-[#202124]">
+                    </div>
+                    <div class="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-2 border-white dark:border-[#202124] rounded-full"></div>
+                </div>
+                <h2 id="profile-name-lg" class="text-xl font-bold mt-4 dark:text-white">User</h2>
+                <p id="profile-email-lg" class="text-sm text-gray-500">user@example.com</p>
+                <div class="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-xs font-bold">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i> <span data-i18n="verified">Verified Account</span>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider ml-2" data-i18n="preferences">Preferences</h3>
+                <div class="g-card overflow-hidden">
+                    <button onclick="App.toggleTheme()" class="w-full p-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"><i data-lucide="moon" class="w-4 h-4 text-gray-600 dark:text-gray-300"></i></div>
+                            <span class="font-medium dark:text-gray-200 text-sm" data-i18n="dark_mode">Dark Mode</span>
                         </div>
-
-                        <div className="hidden md:flex items-center gap-4">
-                             {region && (
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/5">
-                                    <div className="w-5 h-5 rounded-full overflow-hidden">
-                                        <img 
-                                            src={region === 'IN' ? "https://flagcdn.com/w40/in.png" : "https://flagcdn.com/w40/us.png"} 
-                                            alt={region}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono text-slate-300">{region === 'IN' ? 'INR' : 'USD'}</span>
-                                </div>
-                             )}
-                             <a href="contact.html" className="px-6 py-2 border border-white/20 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-void transition-all interactive">
-                                Get Proposal
-                            </a>
+                    </button>
+                    <button onclick="App.toggleLangMenu()" class="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"><i data-lucide="globe" class="w-4 h-4 text-gray-600 dark:text-gray-300"></i></div>
+                            <span class="font-medium dark:text-gray-200 text-sm" data-i18n="language">Language</span>
                         </div>
+                    </button>
+                </div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider ml-2" data-i18n="support">Support</h3>
+                <div class="g-card overflow-hidden">
+                    <button onclick="App.whatsapp()" class="w-full p-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"><i data-lucide="headset" class="w-4 h-4 text-gray-600 dark:text-gray-300"></i></div>
+                            <span class="font-medium dark:text-gray-200 text-sm" data-i18n="help_support">Help & Support</span>
+                        </div>
+                    </button>
+                </div>
+                <button onclick="Auth.logout()" class="w-full py-3 mt-4 text-brand-red font-bold text-sm bg-red-50 dark:bg-red-900/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors" data-i18n="sign_out">Sign Out</button>
+            </div>
+            <div class="pt-8 pb-4">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider text-center mb-4" data-i18n="connect_social">Follow Us</h3>
+                <div class="flex justify-center flex-wrap gap-4 px-4 pb-2">
+                    <a href="#" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a>
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-blue-700 transition-colors flex-shrink-0"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors flex-shrink-0"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-purple-600 transition-colors flex-shrink-0"><i data-lucide="twitch" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"><i data-lucide="youtube" class="w-5 h-5"></i></a>
+                    <a href="#" onclick="App.whatsapp()" class="text-gray-400 hover:text-green-500 transition-colors flex-shrink-0"><i data-lucide="headphones" class="w-5 h-5"></i></a>
+                    <a href="mailto:contact@shridhar.group" class="text-gray-400 hover:text-orange-500 transition-colors flex-shrink-0"><i data-lucide="mail" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-box" id="auth-box">
+            <div id="form-login">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold mb-1 dark:text-white" data-i18n="welcome_back">Welcome Back</h2>
+                    <p class="text-sm text-gray-500" data-i18n="enter_creds">Enter your credentials to continue</p>
+                </div>
+                <div id="login-error" class="error-msg hidden"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i><span id="login-error-text"></span></div>
+                <input type="email" id="login-email" class="auth-input" data-i18n-placeholder="email_placeholder" placeholder="Email Address">
+                <input type="password" id="login-pass" class="auth-input" data-i18n-placeholder="password_placeholder" placeholder="Password">
+                <button onclick="Auth.login()" class="w-full py-3.5 bg-brand-blue text-white rounded-xl font-bold text-lg shadow-lg mb-4 hover:bg-blue-700 transition-colors" data-i18n="sign_in">Sign In</button>
+                <p class="text-center text-sm text-gray-500"><span data-i18n="new_user">New user?</span> <button onclick="Auth.switchMode('signup')" class="text-brand-blue font-bold hover:underline" data-i18n="create_account">Create Account</button></p>
+                <button onclick="Auth.close()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="form-signup" class="hidden">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold mb-1 dark:text-white" data-i18n="create_account">Create Account</h2>
+                    <p class="text-sm text-gray-500" data-i18n="join_today">Join FlowZint today</p>
+                </div>
+                <div id="signup-error" class="error-msg hidden"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i><span id="signup-error-text"></span></div>
+                <input type="text" id="signup-name" class="auth-input" data-i18n-placeholder="name_placeholder" placeholder="Full Name">
+                <input type="email" id="signup-email" class="auth-input" data-i18n-placeholder="email_placeholder" placeholder="Email Address">
+                <input type="password" id="signup-pass" class="auth-input" data-i18n-placeholder="password_placeholder" placeholder="Password">
+                <button onclick="Auth.signup()" class="w-full py-3.5 bg-green-600 text-white rounded-xl font-bold text-lg shadow-lg mb-4 hover:bg-green-700 transition-colors" data-i18n="create_account">Create Account</button>
+                <p class="text-center text-sm text-gray-500"><span data-i18n="have_account">Have an account?</span> <button onclick="Auth.switchMode('login')" class="text-brand-blue font-bold hover:underline" data-i18n="sign_in">Sign In</button></p>
+                <button onclick="Auth.close()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+        </div>
+    </div>
+    <div id="lead-overlay" class="auth-overlay">
+        <div class="auth-box">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-brand-blue mx-auto mb-4"><i data-lucide="sparkles" class="w-7 h-7"></i></div>
+                <h2 class="text-xl font-bold mb-2 dark:text-white" data-i18n="lets_get_started">Let's Get Started</h2>
+                <p class="text-sm text-gray-500 leading-relaxed" data-i18n="share_details">Share your details to connect instantly.</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="lead-brand" class="auth-input" data-i18n-placeholder="brand_placeholder" placeholder="Your Brand Name">
+                <input type="text" id="lead-name" class="auth-input" data-i18n-placeholder="your_name_placeholder" placeholder="Your Name">
+                <input type="tel" id="lead-phone" class="auth-input" data-i18n-placeholder="phone_placeholder" placeholder="Phone Number">
+            </div>
+            <button onclick="App.submitLead()" class="w-full py-4 mt-6 bg-brand-blue text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-colors active:scale-95 transform duration-150" data-i18n="continue_whatsapp">Continue to WhatsApp</button>
+            <button onclick="App.closeLead()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+    <div id="service-detail" class="detail-page">
+        <div class="h-[calc(var(--nav-height)+var(--safe-top))] pt-[var(--safe-top)] px-4 flex items-center gap-4 border-b border-gray-100 dark:border-gray-800 dark:bg-[#202124]">
+            <button onclick="App.closeDetail()" class="w-9 h-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center"><i data-lucide="arrow-left" class="w-5 h-5 dark:text-white"></i></button>
+            <h2 class="font-bold text-lg dark:text-white" id="sd-title"></h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 pb-32">
+            <div class="w-20 h-20 rounded-3xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue mb-6" id="sd-icon-container"></div>
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2" data-i18n="description">Description</h3>
+            <p id="sd-desc" class="text-lg text-gray-800 dark:text-gray-200 leading-relaxed mb-8 font-medium"></p>
+            <div class="g-card p-5 mb-6 dark:bg-[#2d2e31]">
+                <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
+                    <span class="text-gray-500 text-sm" data-i18n="est_cost">Estimated Cost</span>
+                    <span class="font-bold text-brand-blue" id="sd-price"></span>
+                </div>
+                 <div class="flex justify-between items-center">
+                    <span class="text-gray-500 text-sm" data-i18n="typ_timeline">Typical Timeline</span>
+                    <span class="font-bold dark:text-white" id="sd-time"></span>
+                </div>
+            </div>
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4" data-i18n="technologies">Technologies Stack</h3>
+            <div id="sd-tech" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800 pb-[calc(16px+var(--safe-bottom))] bg-white dark:bg-[#202124]">
+            <button onclick="App.openLeadFromService()" class="w-full py-4 rounded-full bg-brand-blue text-white font-bold text-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"><i data-lucide="message-circle" class="w-5 h-5"></i><span data-i18n="chat_expert">Chat with Expert</span></button>
+        </div>
+    </div>
+    <nav class="bottom-nav">
+        <button onclick="App.nav('home')" class="nav-item active" id="nav-home"><div class="nav-indicator"><i data-lucide="home" class="w-6 h-6"></i></div><span class="nav-label" data-i18n="nav_home">Home</span></button>
+        <button onclick="App.nav('services')" class="nav-item" id="nav-services"><div class="nav-indicator"><i data-lucide="grid" class="w-6 h-6"></i></div><span class="nav-label" data-i18n="nav_services">Services</span></button>
+        <button onclick="App.nav('vault')" class="nav-item" id="nav-vault"><div class="nav-indicator"><i data-lucide="folder-lock" class="w-6 h-6"></i></div><span class="nav-label" data-i18n="nav_vault">Vault</span></button>
+        <button onclick="App.nav('works')" class="nav-item" id="nav-works"><div class="nav-indicator"><i data-lucide="briefcase" class="w-6 h-6"></i></div><span class="nav-label" data-i18n="nav_works">Works</span></button>
+        <button onclick="Auth.handleProfileClick()" class="nav-item" id="nav-profile"><div class="nav-indicator"><i data-lucide="user" class="w-6 h-6"></i></div><span class="nav-label" data-i18n="nav_profile">Profile</span></button>
+    </nav>
+    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur text-white px-6 py-3 rounded-full shadow-2xl z-[9999] opacity-0 pointer-events-none transition-all duration-300 transform translate-y-4 flex items-center gap-2 border border-gray-800 whitespace-nowrap"><i data-lucide="info" class="w-4 h-4 text-blue-400"></i><span id="toast-msg" class="text-sm font-medium">Notification</span></div>
+<script>
+    const Auth = (() => {
+        let users = JSON.parse(localStorage.getItem('fz_users')) || [];
+        let session = JSON.parse(localStorage.getItem('fz_session')) || null;
+        const init = () => { updateUI(); };
+        const updateUI = () => {
+            const avatar = document.getElementById('header-avatar');
+            const welcomeName = document.getElementById('welcome-name');
+            if (session) {
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(session.name)}&background=1a73e8&color=fff&bold=true`;
+                avatar.src = avatarUrl;
+                document.getElementById('profile-img-lg').src = avatarUrl;
+                document.getElementById('profile-name-lg').innerText = session.name;
+                document.getElementById('profile-email-lg').innerText = session.email;
+                welcomeName.innerText = session.name.split(' ')[0];
+                document.getElementById('nav-profile').classList.add('text-brand-blue');
+            } else {
+                avatar.src = "https://ui-avatars.com/api/?name=Guest&background=f1f3f4&color=5f6368";
+                welcomeName.innerText = "Guest";
+                document.getElementById('nav-profile').classList.remove('text-brand-blue');
+            }
+        };
+        const handleProfileClick = () => { session ? App.nav('profile') : open(); };
+        const open = () => { document.getElementById('auth-overlay').classList.add('open'); switchMode('login'); window.history.pushState({ modal: 'auth' }, '', ''); };
+        const close = () => { 
+            if(history.state && history.state.modal === 'auth') { history.back(); } else { document.getElementById('auth-overlay').classList.remove('open'); }
+        };
+        const switchMode = (mode) => { document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none'; document.getElementById('form-signup').style.display = mode === 'signup' ? 'block' : 'none'; hideError('login-error'); hideError('signup-error'); };
+        const signup = () => {
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim().toLowerCase();
+            const pass = document.getElementById('signup-pass').value;
+            if (!name || !email || !pass) { showError('signup-error', "Please fill in all fields."); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('signup-error', "Invalid email address format."); return; }
+            if (pass.length < 8) { showError('signup-error', "Password must be at least 8 characters."); return; }
+            if (users.some(u => u.email === email)) { showError('signup-error', "This email is already registered. Please Sign In."); return; }
+            const newUser = { id: Date.now(), name, email, pass };
+            users.push(newUser); localStorage.setItem('fz_users', JSON.stringify(users));
+            session = newUser; localStorage.setItem('fz_session', JSON.stringify(session));
+            updateUI(); close(); App.showToast("Account Created Successfully!"); App.nav('profile');
+        };
+        const login = () => {
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const pass = document.getElementById('login-pass').value;
+            if (!email || !pass) { showError('login-error', "Please enter email and password."); return; }
+            const userByEmail = users.find(u => u.email === email);
+            if (!userByEmail) { showError('login-error', "No account found with this email."); return; }
+            if (userByEmail.pass !== pass) { showError('login-error', "Incorrect password. Please try again."); return; }
+            session = userByEmail; localStorage.setItem('fz_session', JSON.stringify(session));
+            updateUI(); close(); App.showToast("Welcome Back!"); App.nav('profile');
+        };
+        const logout = () => { session = null; localStorage.removeItem('fz_session'); updateUI(); App.nav('home'); App.showToast("Logged Out Successfully"); };
+        const showError = (id, msg) => { document.getElementById(id).classList.remove('hidden'); document.getElementById(id + '-text').innerText = msg; };
+        const hideError = (id) => document.getElementById(id).classList.add('hidden');
+        return { init, handleProfileClick, open, close, switchMode, signup, login, logout };
+    })();
 
-                        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white interactive relative z-[110] p-2">
-                            <Icon name={menuOpen ? 'x' : 'menu'} />
+    const App = (() => {
+        const SERVICES = [
+            { id: 1, key: "s1", icon: "monitor-smartphone", tech: ["Java", ".NET", "Python", "SQL"] },
+            { id: 2, key: "s2", icon: "smartphone", tech: ["Flutter", "React Native", "Swift", "Kotlin"] },
+            { id: 3, key: "s3", icon: "cloud", tech: ["React", "AWS", "Node.js", "Hosting"] },
+            { id: 4, key: "s4", icon: "shopping-cart", tech: ["Shopify", "WooCommerce", "MERN Stack"] },
+            { id: 5, key: "s5", icon: "palette", tech: ["Adobe Suite", "Figma", "Design"] },
+            { id: 6, key: "s6", icon: "briefcase", tech: ["Strategy", "Audit", "Roadmap"] }
+        ];
+        const WEBSITES = [
+            { name: "Volnex", url: "https://volnex.com", color: "text-blue-600 bg-blue-50" },
+            { name: "HealthEngine", url: "https://healthengine.com.au/", color: "text-green-600 bg-green-50" },
+            { name: "FundedFriday", url: "https://fundedfriday.com", color: "text-purple-600 bg-purple-50" },
+            { name: "Rocksbox", url: "https://www.rocksbox.com/", color: "text-pink-600 bg-pink-50" },
+            { name: "Skyville", url: "https://www.skyvilleudaipur.com/", color: "text-orange-600 bg-orange-50" },
+            { name: "Natty Garb", url: "https://www.nattygarb.com/", color: "text-indigo-600 bg-indigo-50" },
+            { name: "Elevate Chairs", url: "https://elevatechairs.com/", color: "text-teal-600 bg-teal-50" },
+            { name: "Therabrush", url: "https://therabrush.co/", color: "text-red-600 bg-red-50" }
+        ];
+        const APPS = [
+            { name: "Phalbites", url: "https://play.google.com/store/apps/details?id=org.codemind.phalbites", color: "text-orange-500 bg-orange-50" },
+            { name: "Pickery", url: "https://play.google.com/store/apps/details?id=com.pickery.app", color: "text-green-500 bg-green-50" },
+            { name: "Tach", url: "https://play.google.com/store/apps/details?id=com.tach.com", color: "text-blue-500 bg-blue-50" },
+            { name: "Chotelal", url: "https://play.google.com/store/apps/details?id=chotelal.mpaani.com.android.chotelal", color: "text-red-500 bg-red-50" },
+            { name: "Ondoor", url: "https://play.google.com/store/apps/details?id=com.ondoor.app", color: "text-yellow-600 bg-yellow-50" },
+            { name: "OTT DNS", url: "https://play.google.com/store/apps/details?id=com.ott.dns.platform.mobile", color: "text-purple-500 bg-purple-50" },
+            { name: "MFine", url: "https://play.google.com/store/apps/details?id=com.mfine", color: "text-teal-500 bg-teal-50" },
+            { name: "Zed Cust.", url: "https://play.google.com/store/apps/details?id=com.zed.customer", color: "text-gray-600 bg-gray-100" }
+        ];
+        const VAULT_FILES = [
+            { name: "Service_Agreement_v2.pdf", size: "2.4 MB", type: "pdf", icon: "file-text", color: "text-red-500", date: "Oct 20", bg: "bg-red-50" },
+            { name: "Brand_Guidelines_2024.pdf", size: "18 MB", type: "pdf", icon: "file-image", color: "text-purple-500", date: "Oct 18", bg: "bg-purple-50" },
+            { name: "Project_Proposal_Final.docx", size: "1.1 MB", type: "doc", icon: "file-text", color: "text-blue-500", date: "Oct 15", bg: "bg-blue-50" },
+            { name: "Initial_Wireframes.fig", size: "45 MB", type: "fig", icon: "figma", color: "text-pink-500", date: "Oct 12", bg: "bg-pink-50" }
+        ];
+        const LANGUAGES = [
+            { code: 'en', name: 'English', native: 'English' }, { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' }, { code: 'hi', name: 'Hindi', native: 'हिंदी' }, { code: 'ta', name: 'Tamil', native: 'தமிழ்' }, { code: 'te', name: 'Telugu', native: 'తెలుగు' }, { code: 'ml', name: 'Malayalam', native: 'മലയാളം' }, { code: 'mr', name: 'Marathi', native: 'मराठी' }, { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' }, { code: 'bn', name: 'Bengali', native: 'বাংলা' }, { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' }, { code: 'ur', name: 'Urdu', native: 'اردو' }, { code: 'ar', name: 'Arabic', native: 'العربية' }, { code: 'es', name: 'Spanish', native: 'Español' }, { code: 'fr', name: 'French', native: 'Français' }, { code: 'de', name: 'German', native: 'Deutsch' }, { code: 'ja', name: 'Japanese', native: '日本語' }, { code: 'zh', name: 'Chinese', native: '中文' }, { code: 'ru', name: 'Russian', native: 'Русский' }
+        ];
+        const TRANSLATIONS = {
+            'en': { welcome: 'Welcome', dashboard_subtitle: 'Your digital engineering hub.', services: 'Services', nav_home: 'Home', nav_services: 'Services', nav_works: 'Works', nav_profile: 'Profile', nav_vault: 'Vault', chat: 'Chat', featured: 'Featured Services', view_all: 'View All', our_services: 'Our Services', services_subtitle: 'Professional solutions tailored for you.', vault_title: 'Project Vault', vault_subtitle: 'Secure access to your assets.', storage_used: 'Storage Used', recent_files: 'Recent Files', works_title: 'Previous Works', works_subtitle: 'Explore our successful projects.', stat_sat: 'Satisfaction', stat_trusted: 'Trusted', stat_proj: 'Projects', websites_apps: 'Websites & Web Apps', mobile_apps: 'Mobile Apps', verified: 'Verified Account', preferences: 'Preferences', support: 'Support', dark_mode: 'Dark Mode', language: 'Language', help_support: 'Help & Support', sign_out: 'Sign Out', welcome_back: 'Welcome Back', enter_creds: 'Enter your credentials to continue', sign_in: 'Sign In', new_user: 'New user?', create_account: 'Create Account', join_today: 'Join FlowZint today', have_account: 'Have an account?', lets_get_started: "Let's Get Started", share_details: 'Share your details to connect instantly.', continue_whatsapp: 'Continue to WhatsApp', need_app_like_this: 'Need an App like this?', get_quote: 'Get your custom quote today', description: 'Description', est_cost: 'Estimated Cost', typ_timeline: 'Typical Timeline', technologies: 'Technologies Stack', chat_expert: 'Chat with Expert', enterprise_sol: 'Pro Enterprise', project_value: 'Active Project Value', updates_live: 'Updates Live', folder_legal: 'Legal & Contracts', folder_design: 'Design Assets', folder_builds: 'Builds & APKs', folder_finance: 'Invoices', email_placeholder: 'Email Address', password_placeholder: 'Password', name_placeholder: 'Full Name', brand_placeholder: 'Your Brand Name', your_name_placeholder: 'Your Name', phone_placeholder: 'Phone Number', visit: 'Visit', need_like_this: 'Need like this', connect_social: 'Follow Us', s1_title: 'Enterprise Software', s1_desc: 'Scalable ERP, CRM, and SaaS platforms.', s1_price: 'Custom Quote', s1_time: '4-12 Weeks', s2_title: 'Mobile Application', s2_desc: 'Custom Native and Cross-platform iOS & Android.', s2_price: '₹50k - ₹5L+', s2_time: '4-8 Weeks', s3_title: 'Web, Hosting & Cloud', s3_desc: 'Modern websites, secure hosting & cloud infra.', s3_price: '₹20k - ₹2L', s3_time: '2-4 Weeks', s4_title: 'E-Commerce Solutions', s4_desc: 'Online stores, marketplaces & payment gateways.', s4_price: '₹40k - ₹3L', s4_time: '3-6 Weeks', s5_title: 'Brand Identity', s5_desc: 'Logo, branding kits & visual identity strategies.', s5_price: '₹10k - ₹1L', s5_time: '1-2 Weeks', s6_title: 'IT Consulting', s6_desc: 'Tech strategy, digital transformation & roadmap.', s6_price: 'Consultation', s6_time: 'Ongoing' },
+            'kn': { welcome: 'ಸ್ವಾಗತ', dashboard_subtitle: 'ನಿಮ್ಮ ಡಿಜಿಟಲ್ ಕೇಂದ್ರ.', services: 'ಸೇವೆಗಳು', nav_home: 'ಮುಖಪುಟ', nav_services: 'ಸೇವೆಗಳು', nav_works: 'ಕೆಲಸ', nav_profile: 'ಪ್ರೊಫೈಲ್', nav_vault: 'ವಾಲ್ಟ್', chat: 'ಚಾಟ್', featured: 'ವೈಶಿಷ್ಟ್ಯಗಳು', view_all: 'ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ', our_services: 'ನಮ್ಮ ಸೇವೆಗಳು', services_subtitle: 'ವೃತ್ತಿಪರ ಪರಿಹಾರಗಳು.', vault_title: 'ಪ್ರಾಜೆಕ್ಟ್ ವಾಲ್ಟ್', vault_subtitle: 'ಸುರಕ್ಷಿತ ಪ್ರವೇಶ.', storage_used: 'ಸಂಗ್ರಹಣೆ', recent_files: 'ಇತ್ತೀಚಿನ ಕಡತಗಳು', works_title: 'ಹಿಂದಿನ ಕೆಲಸಗಳು', works_subtitle: 'ನಮ್ಮ ಯಶಸ್ವಿ ಯೋಜನೆಗಳು.', stat_sat: 'ತೃಪ್ತಿ', stat_trusted: 'ವಿಶ್ವಾಸಾರ್ಹ', stat_proj: 'ಯೋಜನೆಗಳು', websites_apps: 'ವೆಬ್‌ಸೈಟ್‌ಗಳು', mobile_apps: 'ಮೊಬೈಲ್ ಆ್ಯಪ್‌ಗಳು', verified: 'ಪರಿಶೀಲಿಸಿದ ಖಾತೆ', preferences: 'ಆದ್ಯತೆಗಳು', support: 'ಬೆಂಬಲ', dark_mode: 'ಡಾರ್ಕ್ ಮೋಡ್', language: 'ಭಾಷೆ', help_support: 'ಸಹಾಯ', sign_out: 'ಲಾಗ್ ಔಟ್', welcome_back: 'ಸ್ವಾಗತ', enter_creds: 'ಮುಂದುವರಿಯಲು ಲಾಗ್ ಇನ್ ಮಾಡಿ', sign_in: 'ಸೈನ್ ಇನ್', new_user: 'ಹೊಸ ಬಳಕೆದಾರ?', create_account: 'ಖಾತೆ ತೆರೆಯಿರಿ', join_today: 'ಇಂದೇ ಸೇರಿ', have_account: 'ಖಾತೆ ಇದೆಯೇ?', lets_get_started: 'ಪ್ರಾರಂಭಿಸೋಣ', share_details: 'ವಿವರಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ.', continue_whatsapp: 'ವಾಟ್ಸಾಪ್‌ಗೆ', need_app_like_this: 'ಈ ತರಹದ ಆ್ಯಪ್ ಬೇಕೇ?', get_quote: 'ನಿಮ್ಮ ಬೆಲೆ ಪಡೆಯಿರಿ', description: 'ವಿವರಣೆ', est_cost: 'ಅಂದಾಜು ವೆಚ್ಚ', typ_timeline: 'ಸಮಯ', technologies: 'ತಂತ್ರಜ್ಞಾನಗಳು', chat_expert: 'ತಜ್ಞರೊಂದಿಗೆ ಮಾತನಾಡಿ', enterprise_sol: 'ಉದ್ಯಮ ಪರಿಹಾರ', project_value: 'ಯೋಜನೆಯ ಮೌಲ್ಯ', updates_live: 'ಲೈವ್ ನವೀಕರಣಗಳು', folder_legal: 'ಕಾನೂನು', folder_design: 'ವಿನ್ಯಾಸ', folder_builds: 'ಬಿಲ್ಡ್‌ಗಳು', folder_finance: 'ಇನ್‌ವಾಯ್ಸ್‌ಗಳು', email_placeholder: 'ಇಮೇಲ್ ವಿಳಾಸ', password_placeholder: 'ಪಾಸ್‌ವರ್ಡ್', name_placeholder: 'ಪೂರ್ಣ ಹೆಸರು', brand_placeholder: 'ನಿಮ್ಮ ಬ್ರ್ಯಾಂಡ್', your_name_placeholder: 'ನಿಮ್ಮ ಹೆಸರು', phone_placeholder: 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ', visit: 'ಭೇಟಿ ನೀಡಿ', need_like_this: 'ಇದೇ ಬೇಕು', connect_social: 'ನಮ್ಮೊಂದಿಗೆ ಸಂಪರ್ಕಿಸಿ', s1_title: 'ಎಂಟರ್‌ಪ್ರೈಸ್ ಸಾಫ್ಟ್‌ವೇರ್', s1_desc: 'ಸ್ಕೇಲೆಬಲ್ ERP, CRM ಮತ್ತು SaaS ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ಗಳು.', s2_title: 'ಮೊಬೈಲ್ ಅಪ್ಲಿಕೇಶನ್', s2_desc: 'iOS ಮತ್ತು Android ಗಾಗಿ ಸ್ಥಳೀಯ ಮತ್ತು ಕ್ರಾಸ್-ಪ್ಲಾಟ್‌ಫಾರ್ಮ್.', s3_title: 'ವೆಬ್ ಮತ್ತು ಕ್ಲೌಡ್', s3_desc: 'ಆಧುನಿಕ ವೆಬ್‌ಸೈಟ್‌ಗಳು ಮತ್ತು ಸುರಕ್ಷಿತ ಹೋಸ್ಟಿಂಗ್.', s4_title: 'ಇ-ಕಾಮರ್ಸ್ ಪರಿಹಾರಗಳು', s4_desc: 'ಆನ್‌ಲೈನ್ ಸ್ಟೋರ್‌ಗಳು ಮತ್ತು ಪಾವತಿ ಗೇಟ್‌ವೇಗಳು.', s5_title: 'ಬ್ರ್ಯಾಂಡ್ ಗುರುತು', s5_desc: 'ಲೋಗೋ, ಬ್ರ್ಯಾಂಡಿಂಗ್ ಮತ್ತು ದೃಶ್ಯ ತಂತ್ರಗಳು.', s6_title: 'ಐಟಿ ಕನ್ಸಲ್ಟಿಂಗ್', s6_desc: 'ತಂತ್ರಜ್ಞಾನ ತಂತ್ರ ಮತ್ತು ಡಿಜಿಟಲ್ ರೂಪಾಂತರ.' },
+            'hi': { welcome: 'स्वागत है', dashboard_subtitle: 'डिजिटल हब।', services: 'सेवाएं', nav_home: 'होम', nav_services: 'सेवाएं', nav_works: 'काम', nav_profile: 'प्रोफ़ाइल', nav_vault: 'वॉल्ट', chat: 'चैट', featured: 'मुख्य सेवाएं', view_all: 'सभी देखें', our_services: 'हमारी सेवाएं', services_subtitle: 'पेशेवर समाधान।', vault_title: 'प्रोजेक्ट वॉल्ट', vault_subtitle: 'सुरक्षित एक्सेस।', storage_used: 'स्टोरेज', recent_files: 'हाल की फाइलें', works_title: 'पिछले कार्य', works_subtitle: 'सफल प्रोजेक्ट्स।', stat_sat: 'संतोष', stat_trusted: 'भरोसेमंद', stat_proj: 'प्रोजेक्ट्स', websites_apps: 'वेबसाइट्स', mobile_apps: 'मोबाइल ऐप्स', verified: 'सत्यापित खाता', preferences: 'प्राथमिकताएं', support: 'समर्थन', dark_mode: 'डार्क मोड', language: 'भाषा', help_support: 'सहायता', sign_out: 'साइन आउट', welcome_back: 'वापसी पर स्वागत', enter_creds: 'लॉग इन करें', sign_in: 'साइन इन', new_user: 'नए उपयोगकर्ता?', create_account: 'खाता बनाएं', join_today: 'आज ही जुड़ें', have_account: 'खाता है?', lets_get_started: 'चलिए शुरू करते हैं', share_details: 'विवरण साझा करें।', continue_whatsapp: 'व्हाट्सएप पर जारी रखें', need_app_like_this: 'ऐसा ऐप चाहिए?', get_quote: 'कोट्स प्राप्त करें', description: 'विवरण', est_cost: 'अनुमानित लागत', typ_timeline: 'समय', technologies: 'तकनीक', chat_expert: 'विशेषज्ञ से बात करें', enterprise_sol: 'एंटरप्राइज़', project_value: 'प्रोजेक्ट मूल्य', updates_live: 'अपडेट लाइव', folder_legal: 'कानूनी', folder_design: 'डिज़ाइन', folder_builds: 'बिल्ड्स', folder_finance: 'चालान', email_placeholder: 'ईमेल पता', password_placeholder: 'पासवर्ड', name_placeholder: 'पूरा नाम', brand_placeholder: 'ब्रांड का नाम', your_name_placeholder: 'आपका नाम', phone_placeholder: 'फ़ोन नंबर', visit: 'विज़िट करें', need_like_this: 'ऐसा चाहिए', connect_social: 'जुड़े रहें', s1_title: 'एंटरप्राइज़ सॉफ़्टवेयर', s1_desc: 'स्केलेबल ERP, CRM और SaaS प्लेटफ़ॉर्म।', s2_title: 'मोबाइल एप्लिकेशन', s2_desc: 'iOS और Android के लिए कस्टम ऐप।', s3_title: 'वेब और क्लाउड', s3_desc: 'आधुनिक वेबसाइट और सुरक्षित होस्टिंग।', s4_title: 'ई-कॉमर्स समाधान', s4_desc: 'ऑनलाइन स्टोर और पेमेंट गेटवे।', s5_title: 'ब्रांड पहचान', s5_desc: 'लोगो, ब्रांडिंग और विज़ुअल स्ट्रैटेजी।', s6_title: 'आईटी परामर्श', s6_desc: 'प्रौद्योगिकी रणनीति और डिजिटल बदलाव।' },
+            'ta': { welcome: 'வணக்கம்', dashboard_subtitle: 'உங்கள் டிஜிட்டல் மையம்.', services: 'சேவைகள்', nav_home: 'முகப்பு', nav_services: 'சேவைகள்', nav_works: 'பணி', nav_profile: 'சுயவிவரம்', nav_vault: 'வால்ட்', chat: 'அரட்டை', featured: 'சிறப்பு', view_all: 'அனைத்தையும்', our_services: 'எங்கள் சேவைகள்', services_subtitle: 'தொழில்முறை தீர்வுகள்.', vault_title: 'திட்ட வால்ட்', vault_subtitle: 'பாதுகாப்பான அணுகல்.', storage_used: 'சேமிப்பு', recent_files: 'கோப்புகள்', works_title: 'முந்தைய பணிகள்', works_subtitle: 'வெற்றிகரமான திட்டங்கள்.', stat_sat: 'திருப்தி', stat_trusted: 'நம்பகமான', stat_proj: 'திட்டங்கள்', websites_apps: 'இணையதளங்கள்', mobile_apps: 'மொபைல் ஆப்ஸ்', verified: 'சரிபார்க்கப்பட்டது', preferences: 'விருப்பங்கள்', support: 'ஆதரவு', dark_mode: 'இருண்ட முறை', language: 'மொழி', help_support: 'உதவி', sign_out: 'வெளியேறு', welcome_back: 'மீண்டும் வருக', enter_creds: 'உள்நுழையவும்', sign_in: 'உள்நுழை', new_user: 'புதியவரா?', create_account: 'கணக்கு தொடங்கு', join_today: 'இணையுங்கள்', have_account: 'கணக்கு உள்ளதா?', lets_get_started: 'தொடங்கலாம்', share_details: 'விவரங்களை பகிரவும்.', continue_whatsapp: 'வாட்ஸ்அப்பில்', need_app_like_this: 'இது போன்ற ஆப்?', get_quote: 'விலை அறிவோம்', description: 'விளக்கம்', est_cost: 'மதிப்பீடு', typ_timeline: 'காலம்', technologies: 'தொழில்நுட்பம்', chat_expert: 'நிபுணருடன் பேசு', enterprise_sol: 'நிறுவன தீர்வு', project_value: 'திட்ட மதிப்பு', updates_live: 'நேரடி புதுப்பிப்பு', folder_legal: 'சட்டம்', folder_design: 'வடிவமைப்பு', folder_builds: 'உருவாக்கம்', folder_finance: 'விலைப்பட்டியல்', email_placeholder: 'மின்னஞ்சல்', password_placeholder: 'கடவுச்சொல்', name_placeholder: 'பெயர்', brand_placeholder: 'பிராண்ட்', your_name_placeholder: 'உங்கள் பெயர்', phone_placeholder: 'எண்', visit: 'பார்வை', need_like_this: 'இது தேவை', connect_social: 'இணைந்திருங்கள்', s1_title: 'நிறுவன மென்பொருள்', s1_desc: 'ERP, CRM தீர்வுகள்.', s2_title: 'மொபைல் ஆப்ஸ்', s2_desc: 'தனிப்பயன் பயன்பாடுகள்.', s3_title: 'இணையம் & கிளவுட்', s3_desc: 'பாதுகாப்பான ஹோஸ்டிங்.', s4_title: 'மின்-வணிகம்', s4_desc: 'ஆன்லைன் கடைகள்.', s5_title: 'பிராண்ட் அடையாளம்', s5_desc: 'லோகோ வடிவமைப்பு.', s6_title: 'தகவல் தொழில்நுட்ப ஆலோசனை', s6_desc: 'டிஜிட்டல் உத்தி.' },
+            'te': { welcome: 'స్వాగతం', dashboard_subtitle: 'మీ డిజిటల్ హబ్.', services: 'సేవలు', nav_home: 'హోమ్', nav_services: 'సేవలు', nav_works: 'పని', nav_profile: 'ప్రొఫైల్', nav_vault: 'వాల్ట్', chat: 'చాట్', featured: 'ఫీచర్ చేయబడింది', view_all: 'అన్నీ చూడండి', our_services: 'మా సేవలు', services_subtitle: 'వృత్తిపరమైన పరిష్కారాలు.', vault_title: 'ప్రాజెక్ట్ వాల్ట్', vault_subtitle: 'సురక్షిత యాక్సెస్.', storage_used: 'స్టోరేజ్', recent_files: 'ఇటీవలి ఫైళ్లు', works_title: 'గత పనులు', works_subtitle: 'విజయవంతమైన ప్రాజెక్టులు.', stat_sat: 'సంతృప్తి', stat_trusted: 'నమ్మకమైన', stat_proj: 'ప్రాజెక్టులు', websites_apps: 'వెబ్‌సైట్లు', mobile_apps: 'మొబైల్ యాప్స్', verified: 'ధృవీకరించబడింది', preferences: 'ప్రాధాన్యతలు', support: 'మద్దతు', dark_mode: 'డార్క్ మోడ్', language: 'భాష', help_support: 'సహాయం', sign_out: 'లాగ్ అవుట్', welcome_back: 'స్వాగతం', enter_creds: 'లాగిన్ చేయండి', sign_in: 'సైన్ ఇన్', new_user: 'కొత్తవారా?', create_account: 'ఖాతా సృష్టించు', join_today: 'చేరండి', have_account: 'ఖాతా ఉందా?', lets_get_started: 'ప్రారంభిద్దాం', share_details: 'వివరాలు పంచుకోండి.', continue_whatsapp: 'వాట్సాప్', need_app_like_this: 'ఇలాంటి యాప్ కావాలా?', get_quote: 'ధర పొందండి', description: 'వివరణ', est_cost: 'అంచనా వ్యయం', typ_timeline: 'సమయం', technologies: 'టెక్నాలజీస్', chat_expert: 'నిపుణుడితో మాట్లాడండి', enterprise_sol: 'ఎంటర్ప్రైజ్', project_value: 'ప్రాజెక్ట్ విలువ', updates_live: 'లైవ్ అప్‌డేట్స్', folder_legal: 'చట్టపరమైన', folder_design: 'డిజైన్', folder_builds: 'బిల్డ్స్', folder_finance: 'ఇన్వాయిస్లు', email_placeholder: 'ఇమెయిల్', password_placeholder: 'పాస్వర్డ్', name_placeholder: 'పూర్తి పేరు', brand_placeholder: 'బ్రాండ్', your_name_placeholder: 'మీ పేరు', phone_placeholder: 'ఫోన్ నంబర్', visit: 'సందర్శించండి', need_like_this: 'ఇలాంటిది కావాలి', connect_social: 'మాతో కనెక్ట్ అవ్వండి', s1_title: 'ఎంటర్ప్రైజ్ సాఫ్ట్‌వేర్', s1_desc: 'ERP, CRM పరిష్కారాలు.', s2_title: 'మొబైల్ అప్లికేషన్', s2_desc: 'అనుకూల యాప్స్.', s3_title: 'వెబ్ & క్లౌడ్', s3_desc: 'సురక్షిత హోస్టింగ్.', s4_title: 'కామర్స్', s4_desc: 'ఆన్‌లైన్ స్టోర్స్.', s5_title: 'బ్రాండ్ గుర్తింపు', s5_desc: 'లోగో డిజైన్.', s6_title: 'ఐటి కన్సల్టింగ్', s6_desc: 'టెక్నాలజీ స్ట్రాటజీ.' },
+            'ml': { welcome: 'സ്വാഗതം', dashboard_subtitle: 'നിങ്ങളുടെ ഡിജിറ്റൽ ഹബ്.', services: 'സേവനങ്ങൾ', nav_home: 'ഹോം', nav_services: 'സേവനങ്ങൾ', nav_works: 'ജോലി', nav_profile: 'പ്രൊഫൈൽ', nav_vault: 'വോൾട്ട്', chat: 'ചാറ്റ്', featured: 'ഫീച്ചർ ചെയ്തത്', view_all: 'എല്ലാം കാണുക', our_services: 'ഞങ്ങളുടെ സേവനങ്ങൾ', services_subtitle: 'പ്രൊഫഷണൽ പരിഹാരങ്ങൾ.', vault_title: 'പ്രോജക്റ്റ് വോൾട്ട്', vault_subtitle: 'സുരക്ഷിത പ്രവേശനം.', storage_used: 'സംഭരണം', recent_files: 'ഫയലുകൾ', works_title: 'മുൻകാല ജോലികൾ', works_subtitle: 'വിജയകരമായ പദ്ധതികൾ.', stat_sat: 'സംതൃപ്തി', stat_trusted: 'വിശ്വസ്തം', stat_proj: 'പദ്ധതികൾ', websites_apps: 'വെബ്സൈറ്റുകൾ', mobile_apps: 'ആപ്പുകൾ', verified: 'അക്കൗണ്ട്', preferences: 'മുൻഗണനകൾ', support: 'പിന്തുണ', dark_mode: 'ഡാർക്ക് മോഡ്', language: 'ഭാഷ', help_support: 'സഹായം', sign_out: 'പുറത്തുകടക്കുക', welcome_back: 'സ്വാഗതം', enter_creds: 'ലോഗിൻ ചെയ്യുക', sign_in: 'സൈൻ ഇൻ', new_user: 'പുതിയ ആളാണോ?', create_account: 'അക്കൗണ്ട്', join_today: 'ചേരൂ', have_account: 'അക്കൗണ്ട് ഉണ്ടോ?', lets_get_started: 'തുടങ്ങാം', share_details: 'വിശദാംശങ്ങൾ.', continue_whatsapp: 'വാട്ട്സ്ആപ്പ്', need_app_like_this: 'ഇതുപോലൊരു ആപ്പ്?', get_quote: 'വില അറിയൂ', description: 'വിവരണം', est_cost: 'ചെലവ്', typ_timeline: 'സമയം', technologies: 'സാങ്കേതികവിദ്യ', chat_expert: 'സംസാരിക്കുക', enterprise_sol: 'എന്റർപ്രൈസ്', project_value: 'മൂല്യം', updates_live: 'അപ്ഡേറ്റുകൾ', folder_legal: 'നിയമം', folder_design: 'ഡിസൈൻ', folder_builds: 'ബിൽഡുകൾ', folder_finance: 'ഇൻവോയ്സ്', email_placeholder: 'ഇമെയിൽ', password_placeholder: 'പാസ്‌വേഡ്', name_placeholder: 'പേര്', brand_placeholder: 'ബ്രാൻഡ്', your_name_placeholder: 'നിങ്ങളുടെ പേര്', phone_placeholder: 'ഫോൺ', visit: 'സന്ദർശിക്കുക', need_like_this: 'ഇതുപോലെ വേണം', connect_social: 'ബന്ധപ്പെടുക', s1_title: 'എന്റർപ്രൈസ് സോഫ്റ്റ്‌വെയർ', s1_desc: 'ERP സൊല്യൂഷനുകൾ.', s2_title: 'മൊബൈൽ ആപ്പ്', s2_desc: 'ഇഷ്ടാനുസൃത ആപ്പുകൾ.', s3_title: 'വെബ് & ക്ലൗഡ്', s3_desc: 'ഹോസ്റ്റിംഗ്.', s4_title: 'ഇ-കൊമേഴ്സ്', s4_desc: 'ഓൺലൈൻ സ്റ്റോറുകൾ.', s5_title: 'ബ്രാൻഡ്', s5_desc: 'ലോഗോ ഡിസൈൻ.', s6_title: 'ഐടി കൺസൾട്ടിംഗ്', s6_desc: 'സാങ്കേതിക തന്ത്രം.' },
+            'gu': { welcome: 'સ્વાગત છે', dashboard_subtitle: 'તમારું ડિજિટલ હબ.', services: 'સેવાઓ', nav_home: 'હોમ', nav_services: 'સેવાઓ', nav_works: 'કાર્ય', nav_profile: 'પ્રોફાઇલ', nav_vault: 'વોલ્ટ', chat: 'ચેટ', featured: 'વૈશિષ્ટ્યપૂર્ણ', view_all: 'બધું જુઓ', our_services: 'અમારી સેવાઓ', services_subtitle: 'વ્યાવસાયિક ઉકેલો.', vault_title: 'પ્રોજેક્ટ વોલ્ટ', vault_subtitle: 'સુરક્ષિત એક્સેસ.', storage_used: 'સ્ટોરેજ', recent_files: 'તાજેતરની ફાઇલો', works_title: 'અગાઉના કાર્યો', works_subtitle: 'સફળ પ્રોજેક્ટ્સ.', stat_sat: 'સંતોષ', stat_trusted: 'વિશ્વસનીય', stat_proj: 'પ્રોજેક્ટ્સ', websites_apps: 'વેબસાઇટ્સ', mobile_apps: 'મોબાઇલ એપ્સ', verified: 'ચકાસાયેલ', preferences: 'પસંદગીઓ', support: 'સપોર્ટ', dark_mode: 'ડાર્ક મોડ', language: 'ભાષા', help_support: 'મદદ', sign_out: 'લોગ આઉટ', welcome_back: 'સ્વાગત', enter_creds: 'લોગિન કરો', sign_in: 'સાઇન ઇન', new_user: 'નવા છો?', create_account: 'ખાતું ખોલો', join_today: 'જોડાવ', have_account: 'ખાતું છે?', lets_get_started: 'શરૂ કરીએ', share_details: 'વિગતો આપો.', continue_whatsapp: 'વોટ્સએપ', need_app_like_this: 'આવી એપ જોઈએ?', get_quote: 'ભાવ મેળવો', description: 'વર્ણન', est_cost: 'અંદાજિત ખર્ચ', typ_timeline: 'સમય', technologies: 'ટેકનોલોજી', chat_expert: 'નિષ્ણાત સાથે વાત કરો', enterprise_sol: 'એન્ટરપ્રાઇઝ', project_value: 'પ્રોજેક્ટ મૂલ્ય', updates_live: 'લાઇવ', folder_legal: 'કાનૂની', folder_design: 'ડિઝાઇન', folder_builds: 'બિલ્ડ્સ', folder_finance: 'ઈન્વોઈસ', email_placeholder: 'ઇમેઇલ', password_placeholder: 'પાસવર્ડ', name_placeholder: 'પૂરું નામ', brand_placeholder: 'બ્રાન્ડ', your_name_placeholder: 'તમારું નામ', phone_placeholder: 'ફોન નંબર', visit: 'મુલાકાત', need_like_this: 'આવું જોઈએ', connect_social: 'અમારી સાથે જોડાઓ', s1_title: 'એન્ટરપ્રાઇઝ સોફ્ટવેર', s1_desc: 'ERP ઉકેલો.', s2_title: 'મોબાઇલ એપ્લિકેશન', s2_desc: 'કસ્ટમ એપ્સ.', s3_title: 'વેબ અને ક્લાઉડ', s3_desc: 'સુરક્ષિત હોસ્ટિંગ.', s4_title: 'ઈ-કોમર્સ', s4_desc: 'ઓનલાઇન સ્ટોર્સ.', s5_title: 'બ્રાન્ડ ઓળખ', s5_desc: 'લોગો ડિઝાઇન.', s6_title: 'આઇટી કન્સલ્ટિંગ', s6_desc: 'ટેકનોલોજી વ્યૂહરચના.' },
+            'bn': { welcome: 'স্বাগতম', dashboard_subtitle: 'আপনার ডিজিটাল হাব।', services: 'পরিষেবা', nav_home: 'হোম', nav_services: 'পরিষেবা', nav_works: 'কাজ', nav_profile: 'প্রোফাইল', nav_vault: 'ভল্ট', chat: 'চ্যাট', featured: 'বৈশিষ্ট্যযুক্ত', view_all: 'সব দেখুন', our_services: 'আমাদের পরিষেবা', services_subtitle: 'পেশাদার সমাধান।', vault_title: 'প্রকল্প ভল্ট', vault_subtitle: 'নিরাপদ অ্যাক্সেস।', storage_used: 'স্টোরেজ', recent_files: 'সাম্প্রতিক ফাইল', works_title: 'পূর্ববর্তী কাজ', works_subtitle: 'সফল প্রকল্প।', stat_sat: 'সন্তুষ্টি', stat_trusted: 'বিশ্বস্ত', stat_proj: 'প্রকল্প', websites_apps: 'ওয়েবসাইট', mobile_apps: 'মোবাইল অ্যাপস', verified: 'যাচাইকৃত', preferences: 'পছন্দ', support: 'সমর্থন', dark_mode: 'ডার্ক মোড', language: 'ভাষা', help_support: 'সাহায্য', sign_out: 'লগ আউট', welcome_back: 'স্বাগতম', enter_creds: 'লগইন করুন', sign_in: 'সাইন ইন', new_user: 'নতুন?', create_account: 'অ্যাকাউন্ট তৈরি', join_today: 'যোগ দিন', have_account: 'অ্যাকাউন্ট আছে?', lets_get_started: 'শুরু করি', share_details: 'বিবরণ দিন।', continue_whatsapp: 'হোয়াটসঅ্যাপ', need_app_like_this: 'এমন অ্যাপ চাই?', get_quote: 'মূল্য জানুন', description: 'বিবরণ', est_cost: 'আনুমানিক খরচ', typ_timeline: 'সময়', technologies: 'প্রযুক্তি', chat_expert: 'বিশেষজ্ঞ কথা', enterprise_sol: 'এন্টারপ্রাইজ', project_value: 'প্রকল্প মূল্য', updates_live: 'লাইভ', folder_legal: 'আইনি', folder_design: 'ডিজাইন', folder_builds: 'বিল্ড', folder_finance: 'ইনভয়েস', email_placeholder: 'ইমেল', password_placeholder: 'পাসওয়ার্ড', name_placeholder: 'পুরো নাম', brand_placeholder: 'ব্র্যান্ড', your_name_placeholder: 'আপনার নাম', phone_placeholder: 'ফোন নম্বর', visit: 'ভিজিট', need_like_this: 'এমন চাই', connect_social: 'সংযুক্ত হন', s1_title: 'এন্টারপ্রাইজ সফটওয়্যার', s1_desc: 'ERP সমাধান।', s2_title: 'মোবাইল অ্যাপ', s2_desc: 'কাস্টম অ্যাপস।', s3_title: 'ওয়েব এবং ক্লাউড', s3_desc: 'নিরাপদ হোস্টিং।', s4_title: 'ই-কমার্স', s4_desc: 'অনলাইন স্টোর।', s5_title: 'ব্র্যান্ড আইডেন্টিটি', s5_desc: 'লোগো ডিজাইন।', s6_title: 'আইটি পরামর্শ', s6_desc: 'প্রযুক্তি কৌশল।' },
+            'pa': { welcome: 'ਜੀ ਆਇਆਂ ਨੂੰ', dashboard_subtitle: 'ਡਿਜੀਟਲ ਹੱਬ', services: 'ਸੇਵਾਵਾਂ', nav_home: 'ਘਰ', nav_services: 'ਸੇਵਾਵਾਂ', nav_works: 'ਕੰਮ', nav_profile: 'ਪ੍ਰੋਫਾਈਲ', nav_vault: 'ਵਾਲਟ', chat: 'ਗੱਲਬਾਤ', featured: 'ਵਿਸ਼ੇਸ਼', view_all: 'ਸਭ ਦੇਖੋ', our_services: 'ਸਾਡੀਆਂ ਸੇਵਾਵਾਂ', services_subtitle: 'ਪੇਸ਼ੇਵਰ ਹੱਲ', vault_title: 'ਪ੍ਰੋਜੈਕਟ ਵਾਲਟ', vault_subtitle: 'ਸੁਰੱਖਿਅਤ ਪਹੁੰਚ', storage_used: 'ਸਟੋਰੇਜ', recent_files: 'ਹਾਲੀਆ ਫਾਇਲਾਂ', works_title: 'ਪਿਛਲੇ ਕੰਮ', works_subtitle: 'ਸਫਲ ਪ੍ਰੋਜੈਕਟ', stat_sat: 'ਸੰਤੁਸ਼ਟੀ', stat_trusted: 'ਭਰੋਸੇਯੋਗ', stat_proj: 'ਪ੍ਰੋਜੈਕਟ', websites_apps: 'ਵੈੱਬਸਾਈਟਾਂ', mobile_apps: 'ਮੋਬਾਈਲ ਐਪਸ', verified: 'ਤਸਦੀਕਸ਼ੁਦਾ', preferences: 'ਤਰਜੀਹਾਂ', support: 'ਸਹਿਯੋਗ', dark_mode: 'ਡਾਰਕ ਮੋਡ', language: 'ਭਾਸ਼ਾ', help_support: 'ਮਦਦ', sign_out: 'ਲਾਗ ਆਉਟ', welcome_back: 'ਜੀ ਆਇਆਂ ਨੂੰ', enter_creds: 'ਲਾਗਇਨ ਕਰੋ', sign_in: 'ਸਾਈਨ ਇਨ', new_user: 'ਨਵੇਂ ਹੋ?', create_account: 'ਖਾਤਾ ਬਣਾਓ', join_today: 'ਸ਼ਾਮਲ ਹੋਵੋ', have_account: 'ਖਾਤਾ ਹੈ?', lets_get_started: 'ਸ਼ੁਰੂ ਕਰੀਏ', share_details: 'ਵੇਰਵੇ ਦਿਓ', continue_whatsapp: 'ਵਟਸਐਪ', need_app_like_this: 'ਅਜਿਹਾ ਐਪ ਚਾਹੀਦਾ?', get_quote: 'ਕੀਮਤ ਜਾਣੋ', description: 'ਵੇਰਵਾ', est_cost: 'ਅਨੁਮਾਨਤ ਲਾਗਤ', typ_timeline: 'ਸਮਾਂ', technologies: 'ਤਕਨਾਲੋਜੀ', chat_expert: 'ਮਾਹਰ ਨਾਲ ਗੱਲ', enterprise_sol: 'ਇੰਟਰਪ੍ਰਾਈਜ਼', project_value: 'ਪ੍ਰੋਜੈਕਟ ਮੁੱਲ', updates_live: 'ਲਾਈਵ', folder_legal: 'ਕਾਨੂੰਨੀ', folder_design: 'ਡਿਜ਼ਾਈਨ', folder_builds: 'ਬਿਲਡ', folder_finance: 'ਇਨਵੌਇਸ', email_placeholder: 'ਈਮੇਲ', password_placeholder: 'ਪਾਸਵਰਡ', name_placeholder: 'ਪੂਰਾ ਨਾਮ', brand_placeholder: 'ਬ੍ਰਾਂਡ', your_name_placeholder: 'ਤੁਹਾਡਾ ਨਾਮ', phone_placeholder: 'ਫੋਨ ਨੰਬਰ', visit: 'ਵੇਖੋ', need_like_this: 'ਇਹ ਚਾਹੀਦਾ ਹੈ', connect_social: 'ਸਾਡੇ ਨਾਲ ਜੁੜੋ', s1_title: 'ਇੰਟਰਪ੍ਰਾਈਜ਼ ਸਾਫਟਵੇਅਰ', s1_desc: 'ERP ਹੱਲ.', s2_title: 'ਮੋਬਾਈਲ ਐਪਲੀਕੇਸ਼ਨ', s2_desc: 'ਕਸਟਮ ਐਪਸ.', s3_title: 'ਵੈੱਬ ਅਤੇ ਕਲਾਉਡ', s3_desc: 'ਸੁਰੱਖਿਅਤ ਹੋਸਟਿੰਗ.', s4_title: 'ਈ-ਕਾਮਰਸ', s4_desc: 'ਆਨਲਾਈਨ ਸਟੋਰ.', s5_title: 'ਬ੍ਰਾਂਡ ਪਛਾਣ', s5_desc: 'ਲੋਗੋ ਡਿਜ਼ਾਈਨ.', s6_title: 'ਆਈਟੀ ਸਲਾਹਕਾਰ', s6_desc: 'ਤਕਨੀਕੀ ਰਣਨੀਤੀ.' },
+            'ur': { welcome: 'خوش آمدید', dashboard_subtitle: 'ڈیجیٹل مرکز', services: 'خدمات', nav_home: 'ہوم', nav_services: 'خدمات', nav_works: 'کام', nav_profile: 'پروفائل', nav_vault: 'والٹ', chat: 'بات چیت', featured: 'نمایاں', view_all: 'سب دیکھیں', our_services: 'ہماری خدمات', services_subtitle: 'پیشہ ورانہ حل', vault_title: 'پروجیکٹ والٹ', vault_subtitle: 'محفوظ رسائی', storage_used: 'اسٹوریج', recent_files: 'حالیہ فائلیں', works_title: 'پچھلے کام', works_subtitle: 'کامیاب منصوبے', stat_sat: 'اطمینان', stat_trusted: 'قابل اعتماد', stat_proj: 'منصوبے', websites_apps: 'ویب سائٹس', mobile_apps: 'موبائل ایپس', verified: 'تصدیق شدہ', preferences: 'ترجیحات', support: 'سپورٹ', dark_mode: 'ڈارک موڈ', language: 'زبان', help_support: 'مدد', sign_out: 'لاگ آؤٹ', welcome_back: 'خوش آمدید', enter_creds: 'لاگ ان', sign_in: 'سائن ان', new_user: 'نئے ہیں؟', create_account: 'اکاؤنٹ بنائیں', join_today: 'شامل ہوں', have_account: 'اکاؤنٹ ہے؟', lets_get_started: 'شروع کریں', share_details: 'تفصیلات دیں', continue_whatsapp: 'واٹس ایپ', need_app_like_this: 'ایسی ایپ چاہیے؟', get_quote: 'قیمت جانیں', description: 'تفصیل', est_cost: 'تخمینہ لاگت', typ_timeline: 'وقت', technologies: 'ٹیکنالوجی', chat_expert: 'ماہر سے بات', enterprise_sol: 'انٹرپرائز', project_value: 'ویلیو', updates_live: 'لائیو', folder_legal: 'قانونی', folder_design: 'ڈیزائن', folder_builds: 'بلڈز', folder_finance: 'انوائس', email_placeholder: 'ای میل', password_placeholder: 'پاس ورڈ', name_placeholder: 'پورا نام', brand_placeholder: 'برانڈ', your_name_placeholder: 'آپ کا نام', phone_placeholder: 'فون نمبر', visit: 'دیکھیں', need_like_this: 'یہ چاہیے', connect_social: 'رابطہ کریں', s1_title: 'انٹرپرائز سافٹ ویئر', s1_desc: 'ERP حل۔', s2_title: 'موبائل ایپلیکیشن', s2_desc: 'کسٹم ایپس۔', s3_title: 'ویب اور کلاؤڈ', s3_desc: 'محفوظ ہوسٹنگ۔', s4_title: 'ای کامرس', s4_desc: 'آن لائن اسٹورز۔', s5_title: 'برانڈ شناخت', s5_desc: 'لوگو ڈیزائن۔', s6_title: 'آئی ٹی مشاورت', s6_desc: 'ٹیکنالوجی حکمت عملی۔' },
+            'mr': { welcome: 'स्वागत आहे', dashboard_subtitle: 'डिजिटल हब.', services: 'सेवा', nav_home: 'होम', nav_services: 'सेवा', nav_works: 'काम', nav_profile: 'प्रोफाइल', nav_vault: 'व्हॉल्ट', chat: 'चॅट', featured: 'वैशिष्ट्यीकृत', view_all: 'सर्व पहा', our_services: 'आमच्या सेवा', services_subtitle: 'व्यावसायिक उपाय.', vault_title: 'प्रकल्प व्हॉल्ट', vault_subtitle: 'सुरक्षित ऍक्सेस.', storage_used: 'स्टोरेज', recent_files: 'अलीकडील फाइल्स', works_title: 'मागील कार्ये', works_subtitle: 'यशस्वी प्रकल्प.', stat_sat: 'समाधान', stat_trusted: 'विश्वसनीय', stat_proj: 'प्रकल्प', websites_apps: 'वेबसाइट्स', mobile_apps: 'मोबाईल ॲप्स', verified: 'सत्यापित', preferences: 'प्राधान्ये', support: 'समर्थन', dark_mode: 'डार्क मोड', language: 'भाषा', help_support: 'मदत', sign_out: 'बाहेर पडा', welcome_back: 'स्वागत', enter_creds: 'लॉगिन करा', sign_in: 'साइन इन', new_user: 'नवीन?', create_account: 'खाते उघडा', join_today: 'सामील व्हा', have_account: 'खाते आहे?', lets_get_started: 'सुरू करूया', share_details: 'तपशील द्या.', continue_whatsapp: 'व्हॉट्सॲप', need_app_like_this: 'असे ॲप हवे?', get_quote: 'किंमत मिळवा', description: 'वर्णन', est_cost: 'अंदाजे खर्च', typ_timeline: 'वेळ', technologies: 'तंत्रज्ञान', chat_expert: 'तज्ञांशी बोला', enterprise_sol: 'एंटरप्राइज', project_value: 'प्रकल्प मूल्य', updates_live: 'लाइव्ह', folder_legal: 'कायदेशीर', folder_design: 'डिझाइन', folder_builds: 'बिल्ड्स', folder_finance: 'इनव्हॉइस', email_placeholder: 'ईमेल', password_placeholder: 'पासवर्ड', name_placeholder: 'पूर्ण नाव', brand_placeholder: 'ब्रँड', your_name_placeholder: 'तुमचे नाव', phone_placeholder: 'फोन नंबर', visit: 'भेट द्या', need_like_this: 'हे हवे आहे', connect_social: 'संपर्क साधा', s1_title: 'एंटरप्राइझ सॉफ्टवेअर', s1_desc: 'ERP उपाय.', s2_title: 'मोबाईल ॲप्लिकेशन', s2_desc: 'कस्टम ॲप्स.', s3_title: 'वेब आणि क्लाउड', s3_desc: 'सुरक्षित होस्टिंग.', s4_title: 'ई-कॉमर्स', s4_desc: 'ऑनलाइन स्टोअर्स.', s5_title: 'ब्रँड ओळख', s5_desc: 'लोगो डिझाइन.', s6_title: 'आयटी सल्लागार', s6_desc: 'तंत्रज्ञान धोरण.' },
+            'ar': { welcome: 'أهلاً بك', dashboard_subtitle: 'محورك الرقمي.', services: 'خدمات', nav_home: 'الرئيسية', nav_services: 'خدمات', nav_works: 'أعمال', nav_profile: 'الملف', nav_vault: 'خزنة', chat: 'دردشة', featured: 'متميز', view_all: 'عرض الكل', our_services: 'خدماتنا', services_subtitle: 'حلول احترافية.', vault_title: 'خزنة المشروع', vault_subtitle: 'وصول آمن.', storage_used: 'تخزين', recent_files: 'ملفات حديثة', works_title: 'أعمال سابقة', works_subtitle: 'مشاريع ناجحة.', stat_sat: 'رضا', stat_trusted: 'موثوق', stat_proj: 'مشاريع', websites_apps: 'مواقع وتطبيقات', mobile_apps: 'تطبيقات موبايل', verified: 'مؤكد', preferences: 'تفضيلات', support: 'دعم', dark_mode: 'داكن', language: 'لغة', help_support: 'مساعدة', sign_out: 'خروج', welcome_back: 'مرحباً', enter_creds: 'دخول', sign_in: 'تسجيل دخول', new_user: 'جديد؟', create_account: 'إنشاء حساب', join_today: 'انضم', have_account: 'لديك حساب؟', lets_get_started: 'لنبدأ', share_details: 'شارك التفاصيل.', continue_whatsapp: 'واتساب', need_app_like_this: 'تريد مثل هذا؟', get_quote: 'احصل على سعر', description: 'وصف', est_cost: 'تكلفة تقديرية', typ_timeline: 'وقت', technologies: 'تقنيات', chat_expert: 'تحدث لخبير', enterprise_sol: 'شركات', project_value: 'قيمة المشروع', updates_live: 'تحديثات', folder_legal: 'قانوني', folder_design: 'تصميم', folder_builds: 'نسخ', folder_finance: 'فواتير', email_placeholder: 'بريد', password_placeholder: 'كلمة مرور', name_placeholder: 'اسم كامل', brand_placeholder: 'علامة تجارية', your_name_placeholder: 'اسمك', phone_placeholder: 'هاتف', visit: 'زيارة', need_like_this: 'أريد هذا', connect_social: 'تواصل معنا', s1_title: 'برامج المؤسسات', s1_desc: 'حلول ERP و CRM.', s2_title: 'تطبيقات الجوال', s2_desc: 'تطبيقات مخصصة.', s3_title: 'الويب والسحابة', s3_desc: 'استضافة آمنة.', s4_title: 'تجارة إلكترونية', s4_desc: 'متاجر عبر الإنترنت.', s5_title: 'هوية العلامة التجارية', s5_desc: 'تصميم شعار.', s6_title: 'استشارات تقنية', s6_desc: 'استراتيجية تقنية.' },
+            'es': { welcome: 'Bienvenido', dashboard_subtitle: 'Tu centro digital.', services: 'Servicios', nav_home: 'Inicio', nav_services: 'Servicios', nav_works: 'Trabajos', nav_profile: 'Perfil', nav_vault: 'Bóveda', chat: 'Chat', featured: 'Destacado', view_all: 'Ver todo', our_services: 'Nuestros Servicios', services_subtitle: 'Soluciones profesionales.', vault_title: 'Bóveda de Proyecto', vault_subtitle: 'Acceso seguro.', storage_used: 'Almacenamiento', recent_files: 'Archivos recientes', works_title: 'Trabajos Anteriores', works_subtitle: 'Proyectos exitosos.', stat_sat: 'Satisfacción', stat_trusted: 'Confiable', stat_proj: 'Proyectos', websites_apps: 'Sitios y Apps', mobile_apps: 'Apps Móviles', verified: 'Verificado', preferences: 'Preferencias', support: 'Soporte', dark_mode: 'Modo Oscuro', language: 'Idioma', help_support: 'Ayuda', sign_out: 'Cerrar Sesión', welcome_back: 'Bienvenido', enter_creds: 'Iniciar sesión', sign_in: 'Entrar', new_user: '¿Nuevo?', create_account: 'Crear Cuenta', join_today: 'Únete', have_account: '¿Tienes cuenta?', lets_get_started: 'Empecemos', share_details: 'Comparte detalles.', continue_whatsapp: 'WhatsApp', need_app_like_this: '¿Quieres una App así?', get_quote: 'Cotizar', description: 'Descripción', est_cost: 'Costo estimado', typ_timeline: 'Tiempo', technologies: 'Tecnologías', chat_expert: 'Hablar con Experto', enterprise_sol: 'Empresarial', project_value: 'Valor Proyecto', updates_live: 'En vivo', folder_legal: 'Legal', folder_design: 'Diseño', folder_builds: 'Versiones', folder_finance: 'Facturas', email_placeholder: 'Correo', password_placeholder: 'Contraseña', name_placeholder: 'Nombre completo', brand_placeholder: 'Marca', your_name_placeholder: 'Tu nombre', phone_placeholder: 'Teléfono', visit: 'Visitar', need_like_this: 'Quiero esto', connect_social: 'Conectar', s1_title: 'Software Empresarial', s1_desc: 'Soluciones ERP y CRM.', s2_title: 'Aplicación Móvil', s2_desc: 'Apps personalizadas.', s3_title: 'Web y Nube', s3_desc: 'Hosting seguro.', s4_title: 'Comercio Electrónico', s4_desc: 'Tiendas online.', s5_title: 'Identidad de Marca', s5_desc: 'Diseño de logos.', s6_title: 'Consultoría TI', s6_desc: 'Estrategia tecnológica.' },
+            'fr': { welcome: 'Bienvenue', dashboard_subtitle: 'Votre hub numérique.', services: 'Services', nav_home: 'Accueil', nav_services: 'Services', nav_works: 'Travaux', nav_profile: 'Profil', nav_vault: 'Coffre', chat: 'Chat', featured: 'En vedette', view_all: 'Voir tout', our_services: 'Nos Services', services_subtitle: 'Solutions pro.', vault_title: 'Coffre Projet', vault_subtitle: 'Accès sécurisé.', storage_used: 'Stockage', recent_files: 'Fichiers récents', works_title: 'Travaux Précédents', works_subtitle: 'Projets réussis.', stat_sat: 'Satisfaction', stat_trusted: 'Fiable', stat_proj: 'Projets', websites_apps: 'Sites & Apps', mobile_apps: 'Apps Mobiles', verified: 'Vérifié', preferences: 'Préférences', support: 'Support', dark_mode: 'Mode Sombre', language: 'Langue', help_support: 'Aide', sign_out: 'Déconnexion', welcome_back: 'Bienvenue', enter_creds: 'Connexion', sign_in: 'Se connecter', new_user: 'Nouveau?', create_account: 'Créer un compte', join_today: 'Rejoindre', have_account: 'Compte existant?', lets_get_started: 'Commençons', share_details: 'Détails.', continue_whatsapp: 'WhatsApp', need_app_like_this: 'App comme ça?', get_quote: 'Devis', description: 'Description', est_cost: 'Coût estimé', typ_timeline: 'Durée', technologies: 'Technologies', chat_expert: 'Parler à un expert', enterprise_sol: 'Entreprise', project_value: 'Valeur Projet', updates_live: 'En direct', folder_legal: 'Légal', folder_design: 'Design', folder_builds: 'Builds', folder_finance: 'Factures', email_placeholder: 'Email', password_placeholder: 'Mot de passe', name_placeholder: 'Nom complet', brand_placeholder: 'Marque', your_name_placeholder: 'Votre nom', phone_placeholder: 'Téléphone', visit: 'Visiter', need_like_this: 'Je veux ça', connect_social: 'Connecter', s1_title: 'Logiciel d\'Entreprise', s1_desc: 'Solutions ERP et CRM.', s2_title: 'Application Mobile', s2_desc: 'Apps personnalisées.', s3_title: 'Web et Cloud', s3_desc: 'Hébergement sécurisé.', s4_title: 'E-commerce', s4_desc: 'Boutiques en ligne.', s5_title: 'Identité de Marque', s5_desc: 'Design de logo.', s6_title: 'Conseil informatique', s6_desc: 'Stratégie technologique.' },
+            'de': { welcome: 'Willkommen', dashboard_subtitle: 'Ihr digitaler Hub.', services: 'Dienste', nav_home: 'Start', nav_services: 'Dienste', nav_works: 'Arbeit', nav_profile: 'Profil', nav_vault: 'Tresor', chat: 'Chat', featured: 'Vorgestellt', view_all: 'Alle ansehen', our_services: 'Unsere Dienste', services_subtitle: 'Profi-Lösungen.', vault_title: 'Projekt-Tresor', vault_subtitle: 'Sicherer Zugriff.', storage_used: 'Speicher', recent_files: 'Neue Dateien', works_title: 'Frühere Arbeiten', works_subtitle: 'Erfolgreiche Projekte.', stat_sat: 'Zufriedenheit', stat_trusted: 'Vertraut', stat_proj: 'Projekte', websites_apps: 'Websites & Apps', mobile_apps: 'Mobile Apps', verified: 'Verifiziert', preferences: 'Einstellungen', support: 'Support', dark_mode: 'Dunkelmodus', language: 'Sprache', help_support: 'Hilfe', sign_out: 'Abmelden', welcome_back: 'Willkommen', enter_creds: 'Anmelden', sign_in: 'Einloggen', new_user: 'Neu hier?', create_account: 'Konto erstellen', join_today: 'Beitreten', have_account: 'Konto vorhanden?', lets_get_started: 'Los geht\'s', share_details: 'Details teilen.', continue_whatsapp: 'WhatsApp', need_app_like_this: 'App wie diese?', get_quote: 'Angebot', description: 'Beschreibung', est_cost: 'Kosten', typ_timeline: 'Dauer', technologies: 'Technologien', chat_expert: 'Experten fragen', enterprise_sol: 'Enterprise', project_value: 'Projektwert', updates_live: 'Live', folder_legal: 'Recht', folder_design: 'Design', folder_builds: 'Builds', folder_finance: 'Rechnungen', email_placeholder: 'E-Mail', password_placeholder: 'Passwort', name_placeholder: 'Voller Name', brand_placeholder: 'Marke', your_name_placeholder: 'Ihr Name', phone_placeholder: 'Telefon', visit: 'Besuchen', need_like_this: 'Will das', connect_social: 'Verbinden', s1_title: 'Unternehmenssoftware', s1_desc: 'ERP- und CRM-Lösungen.', s2_title: 'Mobile Anwendung', s2_desc: 'Benutzerdefinierte Apps.', s3_title: 'Web & Cloud', s3_desc: 'Sicheres Hosting.', s4_title: 'E-Commerce', s4_desc: 'Online-Shops.', s5_title: 'Markenidentität', s5_desc: 'Logo-Design.', s6_title: 'IT-Beratung', s6_desc: 'Technologiestrategie.' },
+            'ja': { welcome: 'ようこそ', dashboard_subtitle: 'デジタルハブ。', services: 'サービス', nav_home: 'ホーム', nav_services: 'サービス', nav_works: '実績', nav_profile: 'プロフィール', nav_vault: '保管庫', chat: 'チャット', featured: '注目', view_all: 'すべて見る', our_services: '当社のサービス', services_subtitle: 'プロのソリューション。', vault_title: 'プロジェクト保管庫', vault_subtitle: '安全なアクセス。', storage_used: '使用量', recent_files: '最近のファイル', works_title: '過去の実績', works_subtitle: '成功事例。', stat_sat: '満足度', stat_trusted: '信頼', stat_proj: '案件数', websites_apps: 'ウェブ＆アプリ', mobile_apps: 'モバイルアプリ', verified: '認証済み', preferences: '設定', support: 'サポート', dark_mode: 'ダークモード', language: '言語', help_support: 'ヘルプ', sign_out: 'ログアウト', welcome_back: 'お帰りなさい', enter_creds: 'ログイン', sign_in: 'サインイン', new_user: '新規ですか？', create_account: 'アカウント作成', join_today: '参加する', have_account: 'アカウントをお持ちですか？', lets_get_started: '始めましょう', share_details: '詳細を共有。', continue_whatsapp: 'WhatsAppへ', need_app_like_this: '似たアプリ？', get_quote: '見積もり', description: '説明', est_cost: '概算費用', typ_timeline: '期間', technologies: '技術スタック', chat_expert: '専門家とチャット', enterprise_sol: 'エンタープライズ', project_value: 'プロジェクト価値', updates_live: 'ライブ更新', folder_legal: '法務', folder_design: 'デザイン', folder_builds: 'ビルド', folder_finance: '請求書', email_placeholder: 'メール', password_placeholder: 'パスワード', name_placeholder: '氏名', brand_placeholder: 'ブランド名', your_name_placeholder: 'お名前', phone_placeholder: '電話番号', visit: '訪問', need_like_this: 'これ欲しい', connect_social: '接続する', s1_title: 'エンタープライズ', s1_desc: 'ERPおよびCRMソリューション。', s2_title: 'モバイルアプリ', s2_desc: 'カスタムアプリ。', s3_title: 'ウェブ＆クラウド', s3_desc: '安全なホスティング。', s4_title: 'Eコマース', s4_desc: 'オンラインストア。', s5_title: 'ブランド', s5_desc: 'ロゴデザイン。', s6_title: 'ITコンサル', s6_desc: '技術戦略。' },
+            'zh': { welcome: '欢迎', dashboard_subtitle: '数字中心。', services: '服务', nav_home: '首页', nav_services: '服务', nav_works: '案例', nav_profile: '简介', nav_vault: '保险库', chat: '聊天', featured: '精选', view_all: '查看全部', our_services: '我们的服务', services_subtitle: '专业解决方案。', vault_title: '项目库', vault_subtitle: '安全访问。', storage_used: '存储', recent_files: '最近文件', works_title: '过往案例', works_subtitle: '成功项目。', stat_sat: '满意度', stat_trusted: '信任', stat_proj: '项目', websites_apps: '网站与应用', mobile_apps: '移动应用', verified: '已验证', preferences: '偏好', support: '支持', dark_mode: '深色模式', language: '语言', help_support: '帮助', sign_out: '退出', welcome_back: '欢迎回来', enter_creds: '登录', sign_in: '登录', new_user: '新用户？', create_account: '创建账户', join_today: '加入', have_account: '已有账户？', lets_get_started: '开始吧', share_details: '分享详情。', continue_whatsapp: 'WhatsApp', need_app_like_this: '想要类似的？', get_quote: '获取报价', description: '描述', est_cost: '预估成本', typ_timeline: '时间', technologies: '技术栈', chat_expert: '咨询专家', enterprise_sol: '企业版', project_value: '项目价值', updates_live: '实时更新', folder_legal: '法律', folder_design: '设计', folder_builds: '构建', folder_finance: '发票', email_placeholder: '邮箱', password_placeholder: '密码', name_placeholder: '全名', brand_placeholder: '品牌名', your_name_placeholder: '您的名字', phone_placeholder: '电话', visit: '访问', need_like_this: '我也要', connect_social: '联系我们', s1_title: '企业软件', s1_desc: 'ERP和CRM解决方案。', s2_title: '移动应用', s2_desc: '定制应用。', s3_title: '网络与云', s3_desc: '安全托管。', s4_title: '电子商务', s4_desc: '在线商店。', s5_title: '品牌识别', s5_desc: '标志设计。', s6_title: 'IT咨询', s6_desc: '技术战略。' },
+            'ru': { welcome: 'Привет', dashboard_subtitle: 'Цифровой хаб.', services: 'Услуги', nav_home: 'Главная', nav_services: 'Услуги', nav_works: 'Работы', nav_profile: 'Профиль', nav_vault: 'Сейф', chat: 'Чат', featured: 'Избранное', view_all: 'Все', our_services: 'Наши услуги', services_subtitle: 'Проф. решения.', vault_title: 'Сейф проекта', vault_subtitle: 'Безопасный доступ.', storage_used: 'Память', recent_files: 'Недавние', works_title: 'Наши работы', works_subtitle: 'Успешные проекты.', stat_sat: 'Удовлетворенность', stat_trusted: 'Доверие', stat_proj: 'Проекты', websites_apps: 'Сайты и приложения', mobile_apps: 'Мобильные приложения', verified: 'Подтверждено', preferences: 'Настройки', support: 'Поддержка', dark_mode: 'Темная тема', language: 'Язык', help_support: 'Помощь', sign_out: 'Выход', welcome_back: 'С возвращением', enter_creds: 'Войти', sign_in: 'Войти', new_user: 'Новый?', create_account: 'Создать', join_today: 'Присоединиться', have_account: 'Есть аккаунт?', lets_get_started: 'Начать', share_details: 'Детали.', continue_whatsapp: 'WhatsApp', need_app_like_this: 'Хочу такое?', get_quote: 'Цена', description: 'Описание', est_cost: 'Стоимость', typ_timeline: 'Сроки', technologies: 'Технологии', chat_expert: 'Чат с экспертом', enterprise_sol: 'Enterprise', project_value: 'Стоимость', updates_live: 'Live', folder_legal: 'Юрид.', folder_design: 'Дизайн', folder_builds: 'Билды', folder_finance: 'Счета', email_placeholder: 'Email', password_placeholder: 'Пароль', name_placeholder: 'ФИО', brand_placeholder: 'Бренд', your_name_placeholder: 'Ваше имя', phone_placeholder: 'Телефон', visit: 'Посетить', need_like_this: 'Хочу это', connect_social: 'Связь', s1_title: 'Корпоративное ПО', s1_desc: 'ERP и CRM решения.', s2_title: 'Мобильное приложение', s2_desc: 'Кастомные приложения.', s3_title: 'Веб и Облако', s3_desc: 'Безопасный хостинг.', s4_title: 'Электронная коммерция', s4_desc: 'Интернет-магазины.', s5_title: 'Бренд', s5_desc: 'Дизайн логотипа.', s6_title: 'IT Консалтинг', s6_desc: 'Техническая стратегия.' }
+        };
+        let state = { currentLang: 'en', theme: 'light', backPressCounter: 0, leadContext: '', animatedStats: false };
+        const init = () => {
+            Auth.init();
+            renderLanguageList();
+            renderServices(); 
+            renderVault();
+            renderWorks();
+            lucide.createIcons();
+            window.history.replaceState({ page: 'home' }, '', '');
+            window.addEventListener('popstate', handleBackPress);
+            const savedTheme = localStorage.getItem('flowzint_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                state.theme = 'dark';
+            }
+            updateLogo();
+            document.getElementById('auth-overlay').addEventListener('click', (e) => {
+                if(e.target.id === 'auth-overlay') Auth.close();
+            });
+            document.getElementById('lead-overlay').addEventListener('click', (e) => {
+                if(e.target.id === 'lead-overlay') closeLead();
+            });
+            setLang('en');
+        };
+        const t = (key) => {
+            if (TRANSLATIONS[state.currentLang] && TRANSLATIONS[state.currentLang][key]) {
+                return TRANSLATIONS[state.currentLang][key];
+            }
+            return TRANSLATIONS['en'][key] || key;
+        };
+        const nav = (viewId) => {
+            document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navBtn = document.getElementById(`nav-${viewId}`);
+            if(navBtn) navBtn.classList.add('active');
+            window.history.pushState({ page: viewId }, '', '');
+            state.backPressCounter = 0;
+            if(viewId === 'works' && !state.animatedStats) {
+                runStats();
+                state.animatedStats = true;
+            }
+        };
+        const runStats = () => {
+            const animate = (id, target) => {
+                let current = 0;
+                const increment = Math.ceil(target / 40); 
+                const el = document.getElementById(id);
+                if(!el) return;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    el.innerText = current.toLocaleString();
+                }, 40);
+            };
+            animate('stat-sat', 100);
+            animate('stat-trusted', 10000);
+            animate('stat-proj', 10000);
+        };
+        const handleBackPress = (e) => {
+            if(document.getElementById('lead-overlay').classList.contains('open')) {
+                document.getElementById('lead-overlay').classList.remove('open');
+                return;
+            }
+            if(document.getElementById('service-detail').classList.contains('open')) {
+                document.getElementById('service-detail').classList.remove('open');
+                return;
+            }
+            if(document.getElementById('auth-overlay').classList.contains('open')) {
+                document.getElementById('auth-overlay').classList.remove('open');
+                return;
+            }
+            if (state.backPressCounter === 0) {
+                showToast("Press Back again to Exit");
+                state.backPressCounter++;
+                window.history.pushState(e.state, '', '');
+                setTimeout(() => { state.backPressCounter = 0; }, 3000);
+            } 
+        };
+        const renderServices = () => {
+            const list = document.getElementById('services-grid');
+            const featured = document.getElementById('featured-list');
+            const html = SERVICES.map(s => `
+                <div onclick="App.openDetail(${s.id})" class="service-card cursor-pointer group">
+                    <div class="icon-box mr-4"><i data-lucide="${s.icon}" class="w-6 h-6 icon-animate relative z-10"></i></div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-base dark:text-white group-hover:text-brand-blue transition-colors">${t(s.key + '_title')}</h3>
+                        <p class="text-xs text-gray-500 line-clamp-1">${t(s.key + '_desc')}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-brand-blue transition-colors"></i>
+                    </div>
+                </div>
+            `).join('');
+            list.innerHTML = html;
+            featured.innerHTML = SERVICES.slice(0, 3).map(s => `
+                <div onclick="App.openDetail(${s.id})" class="flex items-center gap-3 p-3 bg-white dark:bg-[#2d2e31] rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm cursor-pointer ripple">
+                     <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-brand-blue"><i data-lucide="${s.icon}" class="w-5 h-5"></i></div>
+                    <div class="flex-1"><h4 class="text-sm font-bold dark:text-white">${t(s.key + '_title')}</h4></div>
+                    <i data-lucide="arrow-right" class="w-4 h-4 text-gray-300"></i>
+                </div>
+            `).join('');
+        };
+        const renderWorks = () => {
+            const renderCard = (item, type, icon) => `
+                <div class="work-card group">
+                    <div class="work-icon-wrap ${item.color} group-hover:scale-110 transition-transform">
+                        <i data-lucide="${icon}" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-bold text-sm dark:text-white mb-3 leading-tight w-full truncate">${item.name}</h4>
+                    <div class="w-full grid grid-cols-2 gap-2 mt-auto">
+                        <button onclick="window.open('${item.url}', '_blank')" class="py-2 px-1 bg-gray-50 dark:bg-gray-700 rounded-lg text-[10px] font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-1">
+                            <i data-lucide="external-link" class="w-3 h-3"></i> <span class="whitespace-nowrap">${t('visit')}</span>
+                        </button>
+                        <button onclick="App.openLead('Interest in ${type}: ${item.name}')" class="py-2 px-1 bg-brand-blue/10 text-brand-blue rounded-lg text-[10px] font-bold hover:bg-brand-blue/20 transition-colors flex items-center justify-center gap-1">
+                            <i data-lucide="zap" class="w-3 h-3"></i> <span class="whitespace-nowrap">${t('need_like_this')}</span>
                         </button>
                     </div>
-                </motion.nav>
-
-                <AnimatePresence>
-                    {menuOpen && (
-                        <>
-                            {/* Backdrop */}
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setMenuOpen(false)}
-                                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] md:hidden"
-                            />
-                            
-                            {/* Pro Sidebar */}
-                            <motion.div 
-                                variants={sidebarVariants}
-                                initial="closed"
-                                animate="open"
-                                exit="closed"
-                                className="fixed inset-y-0 right-0 w-full sm:w-[380px] bg-[#0a0a20]/95 backdrop-blur-2xl border-l border-white/10 z-[100] p-8 flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
-                            >
-                                {/* Decorative Glow */}
-                                <div className="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] bg-accent-purple/20 blur-[100px] rounded-full pointer-events-none"></div>
-                                <div className="absolute bottom-[-10%] left-[-10%] w-[200px] h-[200px] bg-accent-cyan/10 blur-[80px] rounded-full pointer-events-none"></div>
-
-                                <div className="flex justify-between items-center mb-16 relative z-10">
-                                    <img src="logo.png" alt="FlowZint" className="h-10 w-auto rounded-xl" />
-                                    <button 
-                                        onClick={() => setMenuOpen(false)} 
-                                        className="text-white hover:text-accent-cyan transition-colors p-2 rounded-full hover:bg-white/10 border border-transparent hover:border-white/10"
-                                    >
-                                        <Icon name="x" className="w-6 h-6" />
-                                    </button>
-                                </div>
-
-                                <div className="flex flex-col gap-6 relative z-10">
-                                    {navItems.map((item, i) => (
-                                        <motion.a 
-                                            key={item} 
-                                            variants={itemVariants}
-                                            href={`${item.toLowerCase()}.html`} 
-                                            className="group relative flex items-center justify-between p-2"
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-xs font-mono text-accent-cyan/50 group-hover:text-accent-cyan transition-colors">0{i+1}</span>
-                                                <span className="text-4xl font-heading font-bold text-slate-300 group-hover:text-white transition-colors">{item}</span>
-                                            </div>
-                                            <span className="opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 text-accent-cyan">
-                                                <Icon name="arrow" className="w-5 h-5" />
-                                            </span>
-                                            {/* Hover Line Effect */}
-                                            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-gradient-to-r from-accent-cyan to-transparent group-hover:w-full transition-all duration-500"></span>
-                                        </motion.a>
-                                    ))}
-                                </div>
-
-                                <motion.div 
-                                    variants={itemVariants}
-                                    className="mt-auto pt-8 border-t border-white/10 relative z-10"
-                                >
-                                    <p className="text-slate-500 text-xs uppercase tracking-widest mb-4">Quick Contact</p>
-                                    <a href="mailto:hello@flowzint.com" className="block text-white text-lg mb-2 hover:text-accent-cyan transition-colors font-medium">hello@flowzint.com</a>
-                                    <div className="flex gap-4 mt-6">
-                                        <a href="#" className="p-2 bg-white/5 rounded-full hover:bg-accent-cyan hover:text-void transition-all border border-white/10 hover:border-accent-cyan">
-                                            <Icon name="socialX" className="w-4 h-4" />
-                                        </a>
-                                        <a href="#" className="p-2 bg-white/5 rounded-full hover:bg-accent-cyan hover:text-void transition-all border border-white/10 hover:border-accent-cyan">
-                                            <Icon name="socialLi" className="w-4 h-4" />
-                                        </a>
-                                        <a href="#" className="p-2 bg-white/5 rounded-full hover:bg-accent-cyan hover:text-void transition-all border border-white/10 hover:border-accent-cyan">
-                                            <Icon name="socialInsta" className="w-4 h-4" />
-                                        </a>
-                                    </div>
-                                    <div className="text-slate-600 text-[10px] mt-6 font-mono">
-                                        SYSTEM ID: FLWZ-2026-X
-                                    </div>
-                                </motion.div>
-                            </motion.div>
-                        </>
-                    )}
-                </AnimatePresence>
-                </>
-            )
-        }
-
-        const Hero = ({ region }) => {
-            return (
-                // UPDATED: Removed md:min-h-screen, reduced bottom padding to remove gap
-                <section className="relative flex flex-col justify-start pt-32 pb-16 md:pt-48 md:pb-24 overflow-hidden">
-                    <div className="absolute inset-0 z-0 overflow-hidden">
-                        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-accent-purple/20 blur-[100px] rounded-full animate-blob"></div>
-                        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-accent-cyan/10 blur-[80px] rounded-full animate-blob" style={{animationDelay: '2s'}}></div>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent-electric/10 blur-[120px] rounded-full animate-blob" style={{animationDelay: '4s'}}></div>
-                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-                    </div>
-
-                    <div className="w-full max-w-[95%] 2xl:max-w-screen-2xl mx-auto px-4 relative z-10 text-center">
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-6"
-                        >
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                            <span className="text-[10px] font-mono text-slate-300 uppercase tracking-widest">
-                                {region === 'IN' ? 'Bengaluru HQ Online' : 'Global Systems Operational'}
-                            </span>
-                        </motion.div>
-
-                        <motion.h1 
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.7, duration: 0.8 }}
-                            className="text-4xl md:text-6xl lg:text-7xl font-heading font-black leading-[1.1] tracking-tighter mb-6"
-                        >
-                            ARCHITECTING THE <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-600">DIGITAL FUTURE</span>
-                        </motion.h1>
-
-                        <motion.p 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.9 }}
-                            className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 font-light leading-relaxed px-2"
-                        >
-                            FlowZint engineers software that feels smoother than <span className="text-white font-bold">Apple</span> and scales bolder than <span className="text-white font-bold">Tesla</span>. We build the systems that run the future.
-                        </motion.p>
-
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 1.1 }}
-                            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-                        >
-                            <a href="contact.html" className="interactive px-6 py-3 bg-white text-void font-bold text-base rounded hover:bg-slate-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.3)] w-full sm:w-auto">
-                                Initiate Launch
-                            </a>
-                            <a href="work.html" className="interactive px-6 py-3 text-white border border-white/20 rounded font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto text-base">
-                                View Architecture <Icon name="arrow" className="w-4 h-4" />
-                            </a>
-                        </motion.div>
-                    </div>
-                </section>
-            )
-        }
-
-        const Services = ({ region }) => {
-            return (
-                // UPDATED: Reduced vertical padding to remove waste gap
-                <section id="services" className="py-16 md:py-24 relative bg-void">
-                    <div className="w-full max-w-[95%] 2xl:max-w-screen-2xl mx-auto px-4 md:px-8">
-                        <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-white/10 pb-8">
-                            <div>
-                                <h4 className="text-accent-cyan font-mono text-xs tracking-widest uppercase mb-3">Capabilities</h4>
-                                <h2 className="text-3xl md:text-5xl font-heading font-bold">Core Modules</h2>
-                            </div>
-                            <p className="text-slate-400 max-w-md text-left md:text-right mt-6 md:mt-0 text-sm md:text-base">
-                                We don't use templates. We forge custom digital weapons designed to outperform your competition.
-                            </p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {servicesData.map((s, i) => (
-                                <motion.div 
-                                    key={i}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="glass-card p-6 md:p-8 rounded-xl group interactive flex flex-col justify-between"
-                                >
-                                    <div>
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div className="p-2.5 bg-white/5 rounded-lg text-accent-cyan group-hover:bg-accent-cyan group-hover:text-void transition-all duration-300">
-                                                <Icon name={s.icon} className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-3xl font-heading font-black text-white/5 group-hover:text-white/10 transition-colors">{s.id}</span>
-                                        </div>
-                                        <h3 className="text-xl font-bold mb-3 text-white group-hover:text-accent-cyan transition-colors">{s.title}</h3>
-                                        <p className="text-slate-400 text-sm leading-relaxed mb-6">{s.desc}</p>
-                                        <div className="flex flex-wrap gap-2 mb-6">
-                                            {s.specs.map(spec => (
-                                                <span key={spec} className="text-[10px] font-mono px-2 py-1 border border-white/10 rounded text-slate-500 bg-white/5">
-                                                    {spec}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    {region && (
-                                        <div className="pt-4 border-t border-white/10 flex justify-between items-center">
-                                            <span className="text-[10px] text-slate-500 uppercase">Est. Investment</span>
-                                            <span className="text-accent-cyan font-bold font-mono text-sm">
-                                                {region === 'IN' ? s.priceINR : s.priceUSD}
-                                            </span>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )
-        }
-
-        const Work = () => {
-            return (
-                // UPDATED: Reduced padding
-                <section id="work" className="py-16 md:py-24 bg-panel relative overflow-hidden">
-                    <div className="absolute top-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    
-                    <div className="w-full max-w-[95%] 2xl:max-w-screen-2xl mx-auto px-4 md:px-8 relative z-10">
-                        <div className="mb-12">
-                            <h2 className="text-3xl md:text-5xl font-heading font-bold mb-4">Selected Works</h2>
-                            <p className="text-slate-400 text-sm md:text-base">Engineering excellence deployed in the wild.</p>
-                        </div>
-
-                        <div className="flex flex-col gap-16 md:gap-32">
-                            {projectsData.map((p, i) => (
-                                <div key={i} className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8 md:gap-16 items-center group`}>
-                                    <div className="w-full md:w-3/5 relative interactive">
-                                        <div className="relative overflow-hidden rounded-xl aspect-video border border-white/10">
-                                            <div className="absolute inset-0 bg-accent-purple/20 z-10 group-hover:opacity-0 transition-opacity duration-500"></div>
-                                            <img src={p.img} alt={p.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                                            <div className="absolute bottom-4 left-4 z-20 bg-black/50 backdrop-blur px-3 py-1 rounded text-[10px] font-mono border border-white/10">
-                                                {p.year}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="w-full md:w-2/5">
-                                        <div className="text-accent-cyan font-mono text-[10px] tracking-widest uppercase mb-3 flex items-center gap-2">
-                                            <span className="w-6 h-[1px] bg-accent-cyan"></span>
-                                            {p.cat}
-                                        </div>
-                                        <h3 className="text-3xl md:text-4xl font-heading font-bold mb-4">{p.title}</h3>
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="px-3 py-1.5 border border-white/20 rounded bg-white/5">
-                                                <div className="text-[10px] text-slate-500 uppercase">Impact</div>
-                                                <div className="text-base font-bold text-white">{p.stat}</div>
-                                            </div>
-                                        </div>
-                                        <button className="text-white text-sm flex items-center gap-3 hover:gap-5 transition-all interactive border-b border-transparent hover:border-accent-cyan pb-1">
-                                            View Case Study <Icon name="arrow" className="w-3 h-3" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )
-        }
-
-        const Process = () => {
-            const steps = [
-                { title: "Deep Discovery", desc: "We deconstruct your business model to find technical leverage points." },
-                { title: "Strategic Architecture", desc: "Blueprinting the system with focus on scalability and security." },
-                { title: "Agile Development", desc: "Rapid 2-week sprints with production-ready deliverables." },
-                { title: "Rigorous Testing", desc: "Automated QA and stress testing before global deployment." },
-                { title: "Scale & Optimize", desc: "Continuous integration and feature expansion post-launch." }
-            ];
-
-            return (
-                // UPDATED: Reduced padding
-                <section id="process" className="py-16 md:py-24 bg-void relative">
-                    <div className="w-full max-w-[95%] 2xl:max-w-screen-2xl mx-auto px-4 md:px-8">
-                        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-                            <div className="lg:sticky lg:top-32 h-fit relative">
-                                <h2 className="text-3xl md:text-5xl font-heading font-bold mb-6">The FlowZint <br /> Protocol</h2>
-                                <p className="text-slate-400 text-base mb-8 leading-relaxed">
-                                    Chaos is the enemy of scale. We utilize a battle-tested engineering methodology that eliminates risk and guarantees velocity.
-                                </p>
-                                <a href="contact.html" className="px-6 py-3 bg-white text-void font-bold rounded hover:bg-slate-200 transition-colors inline-block interactive text-sm">
-                                    Start Discovery Phase
-                                </a>
-                            </div>
-
-                            <div className="flex flex-col gap-16 relative border-l border-white/10 pl-16 md:pl-24">
-                                {steps.map((step, i) => (
-                                    <motion.div 
-                                        key={i}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
-                                        viewport={{ margin: "-50px" }}
-                                        transition={{ duration: 0.5 }}
-                                        className="relative"
-                                    >
-                                        <span className="absolute -left-[75px] md:-left-[105px] top-1 w-3 h-3 bg-void border border-accent-cyan rounded-full z-10"></span>
-                                        <span className="text-accent-cyan font-mono text-lg mb-1 block">0{i+1}</span>
-                                        <h3 className="text-xl font-bold mb-2 text-white">{step.title}</h3>
-                                        <p className="text-slate-400 text-sm leading-relaxed">{step.desc}</p>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )
-        }
-
-        const Reviews = () => {
-            const testimonialsData = [
-            {
-                q: "FlowZint didn't just build a platform; they engineered a legacy for us.",
-                author: "Marcus Thorne",
-                role: "CTO, Apex Global"
-            },
-            {
-                q: "The precision in their code is terrifyingly good. Simply elite execution.",
-                author: "Sarah Jenkings",
-                role: "VP Product, Solstice"
-            },
-            {
-                q: "They operate at a speed and quality I didn't think was possible.",
-                author: "Dr. Arinze Okafor",
-                role: "Founder, NeuroLink"
-            }
-        ];
-            return (
-                // UPDATED: Reduced padding
-                <section id="reviews" className="py-16 md:py-24 bg-panel relative">
-                    <div className="w-full max-w-[95%] 2xl:max-w-screen-2xl mx-auto px-4 md:px-8">
-                         <div className="text-center mb-16">
-                            <h2 className="text-3xl font-heading font-bold">Trust Protocols</h2>
-                        </div>
-                        <div className="grid md:grid-cols-3 gap-6">
-                            {testimonialsData.map((t, i) => (
-                                <div key={i} className="glass-card p-6 md:p-8 rounded-xl relative group hover:-translate-y-2 transition-transform duration-500">
-                                    <div className="text-accent-cyan mb-4 flex gap-1">
-                                        {[1,2,3,4,5].map(star => <Icon key={star} name="star" className="w-3 h-3 fill-current" />)}
-                                    </div>
-                                    <p className="text-base text-slate-300 italic mb-6 font-light">"{t.q}"</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center font-bold text-white text-sm">
-                                            {t.author.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <div className="font-bold text-white text-sm">{t.author}</div>
-                                            <div className="text-[10px] text-slate-500 uppercase tracking-wider">{t.role}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )
-        }
-
-        const Contact = ({ region }) => {
-            const [status, setStatus] = useState(null);
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                setStatus('sending');
-                setTimeout(() => setStatus('sent'), 2000);
-            }
-
-            return (
-                // UPDATED: Reduced padding
-                <section id="contact" className="py-16 md:py-24 bg-void relative overflow-hidden">
-                    <div className="absolute inset-0 bg-hero-glow opacity-20"></div>
-                    
-                    <div className="w-full max-w-[95%] 2xl:max-w-screen-2xl mx-auto px-4 md:px-8 relative z-10">
-                        <div className="max-w-3xl mx-auto glass-card rounded-2xl p-8 md:p-12 border-t border-white/20 text-center">
-                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-purple/20 text-accent-purple mb-6 shadow-[0_0_40px_rgba(112,0,255,0.3)]">
-                                <Icon name="server" className="w-6 h-6" />
-                            </div>
-                            
-                            <h2 className="text-3xl md:text-5xl font-heading font-bold mb-4">Ready to Scale?</h2>
-                            <p className="text-slate-400 mb-8 text-base max-w-xl mx-auto">
-                                Your competition is evolving. Don't get left behind. Secure your development slot today and dominate your market.
-                            </p>
-
-                            {status === 'sent' ? (
-                                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-green-500/20 text-green-400 p-6 rounded border border-green-500/50">
-                                    <h3 className="text-lg font-bold mb-2">Transmission Received</h3>
-                                    <p className="text-sm">Our strategists are analyzing your request. Expect a briefing within 24 hours.</p>
-                                </motion.div>
-                            ) : (
-                                <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
-                                    <div className="relative group">
-                                        <input required type="text" placeholder="Full Name" className="w-full bg-void/50 border border-white/10 rounded p-3 text-white text-sm focus:border-accent-cyan outline-none transition-colors" />
-                                        <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-accent-cyan group-focus-within:w-full transition-all duration-500"></div>
-                                    </div>
-                                    <div className="relative group">
-                                        <input required type="email" placeholder="Corporate Email" className="w-full bg-void/50 border border-white/10 rounded p-3 text-white text-sm focus:border-accent-cyan outline-none transition-colors" />
-                                        <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-accent-cyan group-focus-within:w-full transition-all duration-500"></div>
-                                    </div>
-                                    <button type="submit" disabled={status === 'sending'} className="w-full bg-white text-void font-bold p-3 rounded hover:bg-accent-cyan transition-colors interactive text-sm">
-                                        {status === 'sending' ? 'Encrypting & Sending...' : 'Request Consultation'}
-                                    </button>
-                                </form>
-                            )}
-
-                            <div className="mt-8 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-center items-center gap-6 text-xs text-slate-500">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                                    <span>Accepting New Clients</span>
-                                </div>
-                                <a href="mailto:shridhargroupofcompany2024@gmail.com" className="hover:text-white transition-colors interactive">shridhargroupofcompany2024@gmail.com</a>
-                                <a href="tel:+917483640694" className="hover:text-white transition-colors interactive">+91 74836 40694</a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )
-        }
-
-        const Footer = () => {
-            const socials = [
-                { icon: 'socialX', link: 'https://twitter.com/flowzint' },
-                { icon: 'socialFb', link: 'https://facebook.com/flowzint' },
-                { icon: 'socialLi', link: 'https://linkedin.com/company/flowzint' },
-                { icon: 'socialInsta', link: 'https://instagram.com/flowzint' },
-                { icon: 'socialTwitch', link: 'https://twitch.tv/flowzint' },
-                { icon: 'socialYt', link: 'https://youtube.com/flowzint' },
-                { icon: 'socialPod', link: 'https://podcast.flowzint.com' },
-                { icon: 'socialMail', link: 'mailto:shridhargroupofcompany2024@gmail.com' },
-            ];
-
-            return (
-                <footer className="bg-black py-10 border-t border-white/10">
-                    <div className="w-full max-w-[95%] 2xl:max-w-screen-2xl mx-auto px-4 md:px-8 flex flex-col items-center gap-8">
-                        <div className="flex flex-col md:flex-row w-full justify-between items-center gap-4">
-                            <div className="flex items-center">
-                                {/* UPDATED: Logo image only, no text */}
-                                <img src="logo.png" alt="FlowZint" className="h-10 w-auto rounded-xl" />
-                            </div>
-                            
-                            <div className="flex flex-wrap justify-center gap-6">
-                                {socials.map((s, i) => (
-                                    <a key={i} href={s.link} target="_blank" rel="noopener noreferrer" className="text-white hover:text-accent-cyan transition-colors interactive">
-                                        <Icon name={s.icon} className="w-4 h-4" />
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-                        
-                        <div className="w-full h-px bg-white/10"></div>
-                        
-                        <div className="text-slate-600 text-[10px] uppercase tracking-widest text-center">
-                            © {new Date().getFullYear()} FlowZint Technologies. All Systems Nominal.
-                        </div>
-                    </div>
-                </footer>
-            )
-        }
-
-        const WhatsApp = ({ region }) => {
-            const message = region === 'IN' 
-                ? "Hi FlowZint, I'm from India and interested in your Enterprise Services." 
-                : "Hi FlowZint, I'm visiting from USA and interested in your Digital Solutions.";
-            
-            const url = `https://wa.me/917483640694?text=${encodeURIComponent(message)}`;
-
-            return (
-                <a href={url} target="_blank" className="fixed bottom-6 right-6 z-50 bg-[#25D366] w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-[0_0_30px_rgba(37,211,102,0.4)] interactive group">
-                    <svg className="w-6 h-6 text-white fill-current" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                    </svg>
-                </a>
-            )
-        }
-
-        const App = () => {
-            const [loading, setLoading] = useState(true);
-            const [region, setRegion] = useState(null);
-
-            return (
-                <div className="antialiased text-slate-200">
-                    <Cursor />
-                    <AnimatePresence>
-                        {loading && <Loader onComplete={() => setLoading(false)} />}
-                        {!loading && !region && (
-                            <RegionSelector onSelect={(r) => setRegion(r)} />
-                        )}
-                    </AnimatePresence>
-                    
-                    {!loading && (
-                        <motion.main 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
-                            transition={{ duration: 1 }}
-                        >
-                            <Navbar region={region} />
-                            <Hero region={region} />
-                            <Services region={region} />
-                            <Work />
-                            <Process />
-                            <Reviews />
-                            <Contact region={region} />
-                            <Footer />
-                            <WhatsApp region={region} />
-                        </motion.main>
-                    )}
                 </div>
-            )
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+            `;
+            document.getElementById('works-web-grid').innerHTML = WEBSITES.map(w => renderCard(w, 'Website', 'globe')).join('');
+            document.getElementById('works-app-grid').innerHTML = APPS.map(a => renderCard(a, 'App', 'smartphone')).join('');
+        };
+        const renderVault = () => {
+             document.getElementById('vault-list').innerHTML = VAULT_FILES.map(f => `
+                <div class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-gray-700 group">
+                    <div class="w-12 h-12 rounded-xl ${f.bg || 'bg-gray-50'} dark:bg-gray-800 flex items-center justify-center ${f.color} shadow-sm group-hover:scale-105 transition-transform">
+                        <i data-lucide="${f.icon}" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-sm dark:text-white truncate mb-0.5">${f.name}</h4>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <span class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide">${f.type}</span>
+                            <span>•</span>
+                            <span>${f.size}</span>
+                        </div>
+                    </div>
+                    <button class="w-9 h-9 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-brand-blue hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"><i data-lucide="download-cloud" class="w-4 h-4"></i></button>
+                </div>
+            `).join('');
+        };
+        const renderLanguageList = () => {
+            document.getElementById('lang-menu').innerHTML = LANGUAGES.map(l => `
+                <div onclick="App.setLang('${l.code}')" class="px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-50 dark:border-gray-700 last:border-0 transition-colors">
+                    <div class="flex items-center gap-3">
+                         <span class="text-xs font-bold text-gray-400 w-6 uppercase">${l.code}</span>
+                        <div><div class="text-sm font-medium dark:text-white">${l.native}</div></div>
+                    </div>
+                    ${l.code === state.currentLang ? `<i data-lucide="check" class="w-4 h-4 text-brand-blue"></i>` : ''}
+                </div>
+            `).join('');
+        };
+        const toggleTheme = () => {
+            document.body.classList.toggle('dark');
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('flowzint_theme', state.theme);
+            document.getElementById('theme-color-meta').content = state.theme === 'light' ? '#ffffff' : '#202124';
+            updateLogo();
+        };
+        const updateLogo = () => {
+            const logo = document.getElementById('app-logo');
+            logo.src = state.theme === 'dark' ? 'logob.png' : 'logow.png';
+        };
+        const toggleLangMenu = () => document.getElementById('lang-menu').classList.toggle('open');
+        const setLang = (code) => {
+            state.currentLang = code;
+            document.getElementById('current-lang').innerText = code.toUpperCase();
+            renderLanguageList();
+            document.getElementById('lang-menu').classList.remove('open');
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.innerText = t(key);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                el.placeholder = t(key);
+            });
+            renderWorks();
+            renderServices();
+            lucide.createIcons();
+        };
+        const openDetail = (id) => {
+            const s = SERVICES.find(x => x.id === id);
+            state.leadContext = `Service Inquiry: ${t(s.key + '_title')}`;
+            document.getElementById('sd-title').innerText = t(s.key + '_title');
+            document.getElementById('sd-desc').innerText = t(s.key + '_desc');
+            document.getElementById('sd-price').innerText = t(s.key + '_price');
+            document.getElementById('sd-time').innerText = t(s.key + '_time');
+            document.getElementById('sd-icon-container').innerHTML = `<i data-lucide="${s.icon}" class="w-10 h-10"></i>`;
+            lucide.createIcons();
+            document.getElementById('sd-tech').innerHTML = s.tech.map(t => `<span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-bold border border-gray-200 dark:border-gray-600">${t}</span>`).join('');
+            window.history.pushState({ page: 'detail' }, '', '');
+            document.getElementById('service-detail').classList.add('open');
+        };
+        const closeDetail = () => {
+            if(history.state && history.state.page === 'detail') { history.back(); } else { document.getElementById('service-detail').classList.remove('open'); }
+        };
+        const openLeadFromService = () => openLead(state.leadContext);
+        const openLead = (context) => { 
+            state.leadContext = context; 
+            window.history.pushState({ modal: 'lead' }, '', '');
+            document.getElementById('lead-overlay').classList.add('open'); 
+        };
+        const closeLead = () => {
+            if(history.state && history.state.modal === 'lead') { history.back(); } else { document.getElementById('lead-overlay').classList.remove('open'); }
+        };
+        const submitLead = () => {
+            const brand = document.getElementById('lead-brand').value.trim();
+            const name = document.getElementById('lead-name').value.trim();
+            const phone = document.getElementById('lead-phone').value.trim();
+            if(!brand || !name || !phone) { showToast("Please fill all details"); return; }
+            const msg = `Hi Shridhar Group,\nI am interested in: ${state.leadContext}\n\nMy Details:\nName: ${name}\nBrand: ${brand}\nPhone: ${phone}`;
+            const url = `https://wa.me/917483640694?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+            closeLead();
+            showToast("Redirecting to WhatsApp...");
+        };
+        const whatsapp = () => { window.open(`https://wa.me/917483640694?text=${encodeURIComponent("Hi Shridhar Group, I'm interested in your Enterprise Solutions.")}`, '_blank'); };
+        const showToast = (msg) => { 
+            const t = document.getElementById('toast'); 
+            document.getElementById('toast-msg').innerText = msg; 
+            t.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4'); 
+            setTimeout(() => { t.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4'); }, 3000); 
+        };
+        return { init, nav, toggleTheme, toggleLangMenu, setLang, openDetail, closeDetail, whatsapp, showToast, openLead, closeLead, submitLead, openLeadFromService };
+    })();
+    window.onload = App.init;
+</script>
 </body>
 </html>
